@@ -82,6 +82,7 @@ export const MARKETS = {
     // - High Growth, Tech, Higher Volatility
     // ------------------------------------------------------------
     GROWTH: [
+        { ticker: 'POWR', name: 'POWR (Power ETF)', strategy: 'ALPHA' },
         { ticker: 'NVDA', name: 'NVIDIA', strategy: 'ALPHA', earningsDate: '2026-02-26' },
         { ticker: 'TSLA', name: 'Tesla', strategy: 'ALPHA', earningsDate: '2026-04-22' },
         { ticker: 'AMD', name: 'AMD', strategy: 'ALPHA', earningsDate: '2026-04-30' },
