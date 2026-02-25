@@ -1,11 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/api/yahoo/:path*",
-      "destination": "https://query1.finance.yahoo.com/:path*"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/((?!api|assets|vite.svg|manifest.json).*)/",
       "destination": "/index.html"
     }
   ]
