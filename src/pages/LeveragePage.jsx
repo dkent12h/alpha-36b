@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowDown, DollarSign, Settings, Save } from 'lucide-react';
+import { ArrowDown, ArrowUp, DollarSign, Settings, Save, AlertTriangle } from 'lucide-react';
+import { clsx } from 'clsx';
 import { useMarketData } from '../hooks/useMarketData';
 import { usePriceAlert } from '../hooks/usePriceAlert';
 import { MARKETS } from '../constants';
+import { getStrategyFeedback } from '../utils/strategy';
 
 const LeverageCard = ({ ticker, name, data, settings, onSaveSettings }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -14,6 +16,20 @@ const LeverageCard = ({ ticker, name, data, settings, onSaveSettings }) => {
     const price = parseFloat(data?.price || 0);
     // Use lastCompletedClose as the reference "Prev Close" for leverage calculation goals
     const prevClose = parseFloat(data?.lastCompletedClose || data?.prevClose || 0);
+
+    // New data
+    const change = parseFloat(data?.change || 0);
+    const changePercent = parseFloat(data?.changePercent || 0);
+    const isPositive = change >= 0;
+
+    const ma20 = data?.ma20 || '---';
+    const rsi20 = data?.rsi20 || '--';
+    const isOverbought = rsi20 >= 70;
+    const isOversold = rsi20 <= 30;
+
+    const feedback = getStrategyFeedback(price, ma20, rsi20);
+    const signal = feedback.action;
+    const signalColor = feedback.color;
 
     // Default base price: Use prevClose if basePrice is 0 or not set
     const basePrice = parseFloat(localSettings.basePrice) || prevClose || price;
@@ -53,9 +69,34 @@ const LeverageCard = ({ ticker, name, data, settings, onSaveSettings }) => {
                             </div>
                         )}
                     </div>
+                    {/* Show Change and Change Percent */}
+                    <div className={clsx("flex items-center text-sm font-medium mt-1", isPositive ? "text-emerald-400" : "text-rose-400")}>
+                        {isPositive ? <ArrowUp size={14} className="mr-0.5" /> : <ArrowDown size={14} className="mr-0.5" />}
+                        {Math.abs(change).toFixed(2)} ({Math.abs(changePercent).toFixed(2)}%)
+                    </div>
                     {/* Show Previous Close */}
                     <div className="text-xs text-slate-400 mt-1">
                         Prev Close: <span className="text-slate-200">${prevClose.toFixed(2)}</span>
+                    </div>
+
+                    {/* Main Indicators Row: MA20, RSI & Status */}
+                    <div className="mt-3 mb-2 flex items-center justify-between text-xs">
+                        <div className="flex items-center space-x-2">
+                            <div className="px-2 py-0.5 rounded bg-slate-700 text-slate-300 font-mono">
+                                MA20 {ma20}
+                            </div>
+                            <div className={clsx(
+                                "px-2 py-0.5 rounded font-mono font-bold",
+                                isOverbought ? "bg-rose-500/20 text-rose-400" :
+                                    isOversold ? "bg-emerald-500/20 text-emerald-400" :
+                                        "bg-slate-700 text-slate-300"
+                            )}>
+                                RSI {rsi20}
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <span className={clsx("font-bold", signalColor)}>{signal}</span>
+                        </div>
                     </div>
                 </div>
                 <button
