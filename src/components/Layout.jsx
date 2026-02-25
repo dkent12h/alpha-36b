@@ -56,7 +56,7 @@ export default function Layout({ children }) {
                         <span>Status</span>
                         <span className="text-emerald-400">● Online</span>
                     </div>
-                    <div className="mt-2">v3.6.0-beta</div>
+                    <div className="mt-2">v3.6.0-beta (260225-3)</div>
                 </div>
             </aside>
 

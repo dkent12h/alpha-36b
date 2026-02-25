@@ -14,7 +14,9 @@
   path = "/api/yahoo-html/quote/*"
   function = "yahoo-html"
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# SPA Fallback config: moved to public/_redirects explicitly or handle differently
+
+[dev]
+  command = "npm run dev"
+  targetPort = 5173
+  port = 8888

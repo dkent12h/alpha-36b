@@ -9,14 +9,6 @@ export default function DashboardPage({ tickers, title }) {
     const { data, loading, isSimulation } = useMarketData(tickers);
     const isHome = title.includes("Indices"); // Show guide on first page
 
-    if (loading) {
-        return (
-            <div className="flex h-64 items-center justify-center text-slate-400">
-                <Loader2 className="animate-spin mr-2" /> Loading Market Data...
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-6 pb-20">
             <header className="mb-6 flex justify-between items-center">
@@ -31,12 +23,26 @@ export default function DashboardPage({ tickers, title }) {
                 </div>
             </header>
 
-            {/* Today's Execution Guide */}
-
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {tickers.map((t) => {
-                    const tickData = data[t.ticker] || {};
+                    const tickData = data[t.ticker];
+
+                    // Skeleton Loader for empty data
+                    if (!tickData || tickData.price === undefined) {
+                        return (
+                            <div key={t.ticker} className="bg-slate-800 rounded-xl p-5 h-32 animate-pulse border border-slate-700 flex flex-col justify-between">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <div className="h-5 w-24 bg-slate-700 rounded mb-2"></div>
+                                        <div className="h-3 w-16 bg-slate-700 rounded"></div>
+                                    </div>
+                                    <div className="h-6 w-20 bg-slate-700 rounded"></div>
+                                </div>
+                                <div className="h-8 w-full bg-slate-700/50 rounded mt-4"></div>
+                            </div>
+                        );
+                    }
+
                     // If Home (Indices), use Chart Card
                     if (isHome) {
                         return (
@@ -48,7 +54,7 @@ export default function DashboardPage({ tickers, title }) {
                                 change={tickData.change}
                                 changePercent={tickData.changePercent}
                                 ma20={tickData.ma20}
-                                rsi14={tickData.rsi14}
+                                rsi20={tickData.rsi20}
                                 history={tickData.history}
                                 status={tickData.status}
                             />

@@ -130,7 +130,7 @@ const fetchYahooData = async (symbol) => {
         const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
         const baseUrl = isProduction ? '/api/yahoo-chart' : '/api/yahoo/v8/finance/chart';
         // Construct URL
-        const query = `?interval=15m&range=5d&includePrePost=true`;
+        const query = `?interval=1d&range=3mo&includePrePost=true`;
         let url;
 
         if (isProduction) {
@@ -159,26 +159,64 @@ const fetchYahooData = async (symbol) => {
         }
 
         let activePrice = meta.regularMarketPrice || lastClose;
-        let marketState = meta.marketState || 'REGULAR';
+        let marketState = meta.marketState || 'REGULAR'; // Default to REGULAR if missing
 
-        if (marketState === 'PRE' && meta.preMarketPrice) activePrice = meta.preMarketPrice;
-        else if ((marketState === 'POST' || marketState === 'CLOSED') && meta.postMarketPrice) activePrice = meta.postMarketPrice;
+        // Debug
+        // console.log(`[Yahoo API - ${symbol}] State info:`, {
+        //   marketState: meta.marketState,
+        //   pre: meta.preMarketPrice,
+        //   post: meta.postMarketPrice,
+        //   regular: meta.regularMarketPrice
+        // });
+
+        if (isUSStock) {
+            // Priority 1: Extracted explicit pre/post prices
+            if (meta.preMarketPrice && meta.preMarketPrice > 0) {
+                marketState = 'PRE';
+                activePrice = meta.preMarketPrice;
+            } else if (meta.postMarketPrice && meta.postMarketPrice > 0) {
+                marketState = 'POST';
+                activePrice = meta.postMarketPrice;
+            }
+            // Priority 2: Use Yahoo's market state if valid and matching regular hours logic
+            else if (marketState === 'PRE' || marketState === 'POST') {
+                // Keep the state, activePrice is already set to fallback if explicit prices are missing
+            }
+            // Priority 3: Time-based fallback for US off-hours 
+            else if (!isRegularMarketTime() && marketState === 'REGULAR') {
+                marketState = 'CLOSED';
+            }
+        } else {
+            // For KR stocks, Yahoo often wrongly returns CLOSED during daytime
+            // We can assume REGULAR or derive from time
+            marketState = 'REGULAR';
+        }
 
         const kstNow = new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" });
         const kstHour = new Date(kstNow).getHours();
+
         if (isUSStock && (kstHour >= 7 && kstHour < 21)) {
-            // US Night logic could be enforced here if needed
+            // US Night logic could be enforced here if no pre/post data
+            // ONLY force CLOSED if we haven't already identified PRE or POST
+            if (marketState !== 'PRE' && marketState !== 'POST') {
+                marketState = 'CLOSED';
+            }
         }
 
-        const baseline = meta.regularMarketPrice || meta.chartPreviousClose || meta.previousClose;
+        let baseline = meta.regularMarketPreviousClose || meta.previousClose || meta.chartPreviousClose;
+        if (closes.length >= 2) {
+            // By default, baseline for calculating today's change is the previous day's close
+            baseline = closes[closes.length - 2];
+        }
 
         return {
             symbol: symbol,
             price: activePrice,
             prevClose: baseline,
+            lastCompletedClose: closes[closes.length - 1], // Provide this for leverage card
             change: activePrice - baseline,
             changePercent: 0,
-            marketState: marketState,
+            marketState: marketState, // E.g., 'PRE', 'POST', 'REGULAR'
             history: closes.filter(c => c !== null),
             source: 'YAHOO_API'
         };
@@ -192,8 +230,8 @@ const fetchYahooData = async (symbol) => {
 // HOOK
 // --------------------------------------------------------------------------
 export const useMarketData = (tickers) => {
-    const [data, setData] = useState({});
-    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState(() => globalCache.data || {});
+    const [loading, setLoading] = useState(Object.keys(globalCache.data || {}).length === 0);
     const [isSimulationMode, setSimulationMode] = useState(false);
 
     const [intervalTime, setIntervalTime] = useState(30000);
@@ -221,28 +259,48 @@ export const useMarketData = (tickers) => {
             // PHASE 1: REGULAR HOURS -> YAHOO
             // =========================================================================
             if (isRegular) {
-                const promises = tickers.map(t => fetchYahooData(t.ticker));
-                const results = await Promise.all(promises);
                 const failedTickers = [];
+                for (let i = 0; i < tickers.length; i += 10) {
+                    const chunk = tickers.slice(i, i + 10);
+                    const chunkResults = await Promise.all(chunk.map(t => fetchYahooData(t.ticker)));
+                    let chunkHasChanges = false;
 
-                results.forEach((res, idx) => {
-                    const ticker = tickers[idx].ticker;
-                    if (res && res.price) {
-                        if (updateCacheWithResult(ticker, res, newData)) hasChanges = true;
-                        successCount++;
-                    } else {
-                        failedTickers.push(ticker);
+                    chunkResults.forEach((res, idx) => {
+                        const ticker = chunk[idx].ticker;
+                        if (res && res.price) {
+                            if (updateCacheWithResult(ticker, res, newData)) {
+                                hasChanges = true;
+                                chunkHasChanges = true;
+                            }
+                            successCount++;
+                        } else {
+                            failedTickers.push(ticker);
+                        }
+                    });
+
+                    // Progressive render: show what we have so far
+                    if (chunkHasChanges) {
+                        globalCache.data = newData;
+                        setData({ ...newData });
                     }
-                });
+                }
 
                 // Fallback to FMP
                 if (failedTickers.length > 0 && FMP_API_KEY && FMP_API_KEY !== 'YOUR_FMP_API_KEY') {
                     const fmpData = await fetchFMPBatch(tickers.filter(t => failedTickers.includes(t.ticker)));
                     if (fmpData) {
+                        let fmpChunkChanges = false;
                         fmpData.forEach(item => {
-                            if (updateCacheWithFMP(item, newData)) hasChanges = true;
+                            if (updateCacheWithFMP(item, newData)) {
+                                hasChanges = true;
+                                fmpChunkChanges = true;
+                            }
                             successCount++;
                         });
+                        if (fmpChunkChanges) {
+                            globalCache.data = newData;
+                            setData({ ...newData });
+                        }
                     }
                 }
             }
@@ -255,24 +313,45 @@ export const useMarketData = (tickers) => {
                 if (FMP_API_KEY && FMP_API_KEY !== 'YOUR_FMP_API_KEY') {
                     const fmpData = await fetchFMPBatch(tickers);
                     if (fmpData && fmpData.length > 0) {
+                        let fmpChunkChanges = false;
                         fmpData.forEach(item => {
-                            if (updateCacheWithFMP(item, newData)) hasChanges = true;
+                            if (updateCacheWithFMP(item, newData)) {
+                                hasChanges = true;
+                                fmpChunkChanges = true;
+                            }
                             successCount++;
                         });
+                        if (fmpChunkChanges) {
+                            globalCache.data = newData;
+                            setData({ ...newData });
+                        }
                         fmpSuccess = true;
                     }
                 }
 
                 if (!fmpSuccess) {
-                    const promises = tickers.map(t => fetchYahooData(t.ticker));
-                    const results = await Promise.all(promises);
-                    results.forEach((res, idx) => {
-                        const ticker = tickers[idx].ticker;
-                        if (res && res.price) {
-                            if (updateCacheWithResult(ticker, res, newData)) hasChanges = true;
-                            successCount++;
+                    for (let i = 0; i < tickers.length; i += 10) {
+                        const chunk = tickers.slice(i, i + 10);
+                        const chunkResults = await Promise.all(chunk.map(t => fetchYahooData(t.ticker)));
+                        let chunkHasChanges = false;
+
+                        chunkResults.forEach((res, idx) => {
+                            const ticker = chunk[idx].ticker;
+                            if (res && res.price) {
+                                if (updateCacheWithResult(ticker, res, newData)) {
+                                    hasChanges = true;
+                                    chunkHasChanges = true;
+                                }
+                                successCount++;
+                            }
+                        });
+
+                        // Progressive render
+                        if (chunkHasChanges) {
+                            globalCache.data = newData;
+                            setData({ ...newData });
                         }
-                    });
+                    }
                 }
             }
 
@@ -305,15 +384,15 @@ export const useMarketData = (tickers) => {
 
     // Update Helpers - Return TRUE if changed
     const updateCacheWithResult = (ticker, result, cache) => {
-        let ma20 = null, rsi14 = null;
+        let ma20 = null, rsi20 = null;
         if (result.history && result.history.length >= 20) {
             globalCache.historyData[ticker] = result.history;
             ma20 = calculateSMA(result.history, 20);
-            rsi14 = calculateRSI(result.history, 14);
+            rsi20 = calculateRSI(result.history, 20);
         } else if (globalCache.historyData[ticker]) {
             const hist = globalCache.historyData[ticker];
             ma20 = calculateSMA(hist, 20);
-            rsi14 = calculateRSI(hist, 14);
+            rsi20 = calculateRSI(hist, 20);
         }
 
         const baseline = result.prevClose || result.price;
@@ -330,6 +409,11 @@ export const useMarketData = (tickers) => {
             old.status === status &&
             old.prevClose === baseline.toFixed(2)) {
 
+            // Fix: Ensure history isn't lost from older cache items that didn't have it
+            if (!old.history || old.history.length === 0) {
+                old.history = result.history || [];
+            }
+
             // Allow minimal noise updates (like timestamp) to be skipped
             cache[ticker] = old;
             return false;
@@ -340,11 +424,13 @@ export const useMarketData = (tickers) => {
             change: change.toFixed(2),
             changePercent: changePercent.toFixed(2),
             prevClose: baseline.toFixed(2),
+            lastCompletedClose: result.lastCompletedClose || baseline.toFixed(2),
             ma20: ma20 ? ma20.toFixed(2) : '---',
-            rsi14: rsi14 ? Math.round(rsi14) : '--',
+            rsi20: rsi20 ? Math.round(rsi20) : '--',
             status: status,
             timestamp: new Date().toISOString(),
-            source: result.source
+            source: result.source,
+            history: result.history || []
         };
         return true;
     };
@@ -356,11 +442,11 @@ export const useMarketData = (tickers) => {
         const change = item.change;
         const changePercent = item.changesPercentage;
 
-        let ma20 = null, rsi14 = null;
+        let ma20 = null, rsi20 = null;
         if (globalCache.historyData[ticker]) {
             const hist = globalCache.historyData[ticker];
             ma20 = calculateSMA(hist, 20);
-            rsi14 = calculateRSI(hist, 14);
+            rsi20 = calculateRSI(hist, 20);
         }
 
         const priceDisplay = price.toFixed(2);
@@ -377,7 +463,7 @@ export const useMarketData = (tickers) => {
             changePercent: changePercent.toFixed(2),
             prevClose: prevClose.toFixed(2),
             ma20: ma20 ? ma20.toFixed(2) : '---',
-            rsi14: rsi14 ? Math.round(rsi14) : '--',
+            rsi20: rsi20 ? Math.round(rsi20) : '--',
             status: 'FMP_LIVE',
             timestamp: new Date().toISOString(),
             source: 'FMP'

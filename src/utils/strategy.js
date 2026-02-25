@@ -2,11 +2,11 @@
  * Alpha 3.6B Strategy Engine (Korean Ver.)
  */
 
-export const getStrategyFeedback = (price, ma20, rsi14, strategyType = 'CORE') => {
+export const getStrategyFeedback = (price, ma20, rsi20, strategyType = 'CORE') => {
     // Convert inputs
     const p = parseFloat(price);
     const m = parseFloat(ma20);
-    const r = parseFloat(rsi14);
+    const r = parseFloat(rsi20);
 
     if (isNaN(p) || isNaN(m) || isNaN(r)) {
         return {

@@ -28,7 +28,7 @@ export default function ActionGuide() {
         const info = allTickers.find(t => t.ticker === ticker);
         if (!info) return;
 
-        const feedback = getStrategyFeedback(item.price, item.ma20, item.rsi14, info.strategy);
+        const feedback = getStrategyFeedback(item.price, item.ma20, item.rsi20, info.strategy);
 
         if (feedback.type === 'SELL') {
             sells.push({ name: info.name, ...feedback });

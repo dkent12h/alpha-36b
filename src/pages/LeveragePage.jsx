@@ -12,18 +12,22 @@ const LeverageCard = ({ ticker, name, data, settings, onSaveSettings }) => {
     usePriceAlert(ticker, data, settings);
 
     const price = parseFloat(data?.price || 0);
-    const prevClose = parseFloat(data?.prevClose || 0); // Get Prev Close
+    // Use lastCompletedClose as the reference "Prev Close" for leverage calculation goals
+    const prevClose = parseFloat(data?.lastCompletedClose || data?.prevClose || 0);
 
     // Default base price: Use prevClose if basePrice is 0 or not set
     const basePrice = parseFloat(localSettings.basePrice) || prevClose || price;
 
-    const target1Percent = parseFloat(localSettings.target1) || 7;
-    const target2Percent = parseFloat(localSettings.target2) || 14;
+    const target1Percent = parseFloat(localSettings.target1) || 5;
+    const target2Percent = parseFloat(localSettings.target2) || 7;
+    const target3Percent = parseFloat(localSettings.target3) || 14;
 
     const buyPrice1 = basePrice * (1 - target1Percent / 100);
     const buyPrice2 = basePrice * (1 - target2Percent / 100);
+    const buyPrice3 = basePrice * (1 - target3Percent / 100);
 
     const dist1 = ((price - buyPrice1) / buyPrice1) * 100;
+    const dist2 = ((price - buyPrice2) / buyPrice2) * 100;
 
     const handleSave = () => {
         onSaveSettings(ticker, localSettings);
@@ -39,8 +43,15 @@ const LeverageCard = ({ ticker, name, data, settings, onSaveSettings }) => {
                         <span className="text-xs text-slate-500 bg-slate-900 px-1.5 py-0.5 rounded">{name}</span>
                         {settings.enabled && <span className="text-[10px] text-green-400 border border-green-400 px-1 rounded">ON</span>}
                     </div>
-                    <div className="text-2xl font-mono font-bold text-white mt-1">
-                        ${price.toFixed(2)}
+                    <div className="flex items-end space-x-3 mt-1">
+                        <div className="text-2xl font-mono font-bold text-white">
+                            ${price.toFixed(2)}
+                        </div>
+                        {data && data.status && data.status !== 'LIVE' && (
+                            <div className="text-[10px] mb-1.5 bg-amber-900/40 text-amber-500 border border-amber-900 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">
+                                {data.status === 'PRE' ? 'PRE-MKT' : data.status === 'POST' ? 'AFTER-MKT' : data.status}
+                            </div>
+                        )}
                     </div>
                     {/* Show Previous Close */}
                     <div className="text-xs text-slate-400 mt-1">
@@ -73,23 +84,32 @@ const LeverageCard = ({ ticker, name, data, settings, onSaveSettings }) => {
                             * Click to use Prev Close (${prevClose.toFixed(2)})
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                         <div>
-                            <label className="text-slate-500 block text-xs mb-1">1st Entry (-%)</label>
+                            <label className="text-slate-500 block text-xs mb-1">1st (-%)</label>
                             <input
                                 type="number"
                                 value={localSettings.target1}
                                 onChange={(e) => setLocalSettings({ ...localSettings, target1: e.target.value })}
-                                className="w-full bg-slate-800 border border-slate-700 rounded py-1 px-2 text-slate-200 focus:border-blue-500 outline-none"
+                                className="w-full bg-slate-800 border border-slate-700 rounded py-1 px-1 text-slate-200 focus:border-blue-500 outline-none"
                             />
                         </div>
                         <div>
-                            <label className="text-slate-500 block text-xs mb-1">2nd Entry (-%)</label>
+                            <label className="text-slate-500 block text-xs mb-1">2nd (-%)</label>
                             <input
                                 type="number"
                                 value={localSettings.target2}
                                 onChange={(e) => setLocalSettings({ ...localSettings, target2: e.target.value })}
-                                className="w-full bg-slate-800 border border-slate-700 rounded py-1 px-2 text-slate-200 focus:border-blue-500 outline-none"
+                                className="w-full bg-slate-800 border border-slate-700 rounded py-1 px-1 text-slate-200 focus:border-blue-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-slate-500 block text-xs mb-1">3rd (-%)</label>
+                            <input
+                                type="number"
+                                value={localSettings.target3}
+                                onChange={(e) => setLocalSettings({ ...localSettings, target3: e.target.value })}
+                                className="w-full bg-slate-800 border border-slate-700 rounded py-1 px-1 text-slate-200 focus:border-blue-500 outline-none"
                             />
                         </div>
                     </div>
@@ -130,6 +150,16 @@ const LeverageCard = ({ ticker, name, data, settings, onSaveSettings }) => {
                         <span className="text-slate-400">2nd Entry (-{target2Percent}%)</span>
                         <div className="text-right">
                             <div className="font-mono font-bold text-emerald-500">${buyPrice2.toFixed(2)}</div>
+                            <div className="text-[10px] text-slate-500">
+                                Gap: {dist2 > 0 ? '+' : ''}{dist2.toFixed(2)}%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-between items-center bg-slate-900/40 p-2 rounded text-sm border-t border-slate-800 mt-1 pt-2">
+                        <span className="text-slate-400">3rd Entry (-{target3Percent}%)</span>
+                        <div className="text-right">
+                            <div className="font-mono font-bold text-emerald-600">${buyPrice3.toFixed(2)}</div>
                             <div className="text-[10px] text-slate-500">
                                 (Base: ${basePrice.toFixed(2)})
                             </div>
@@ -176,7 +206,7 @@ export default function LeveragePage() {
                         ticker={t.ticker}
                         name={t.name}
                         data={data[t.ticker]}
-                        settings={settings[t.ticker] || { basePrice: 0, target1: 7, target2: 14 }}
+                        settings={settings[t.ticker] || { basePrice: 0, target1: 5, target2: 7, target3: 14 }}
                         onSaveSettings={updateSettings}
                     />
                 ))}
