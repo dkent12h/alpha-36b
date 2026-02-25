@@ -91,7 +91,7 @@ const fetchFMPBatch = async (tickers) => {
 const fetchQuoteFromHTML = async (symbol) => {
     try {
         const url = `/api/yahoo-html/quote/${symbol}`;
-        const res = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 3000 });
+        const res = await axios.get(url, { timeout: 3000 });
         const html = res.data;
 
         const postMatch = html.match(/"postMarketPrice":\{"raw":([0-9.]+)/);
@@ -358,8 +358,8 @@ export const useMarketData = (tickers) => {
             // =========================================================================
             // PHASE 3: SIMULATION FALLBACK
             // =========================================================================
-            if (successCount === 0 && Object.keys(newData).length === 0) {
-                // Only verify simulation mode if we really have NO data
+            if (successCount === 0) {
+                // If APIs are blocked or failing, simulate the requested tickers
                 runSimulation(tickers, newData);
                 setSimulationMode(true);
                 hasChanges = true; // Sim always changes
@@ -487,14 +487,20 @@ export const useMarketData = (tickers) => {
             const sessionStart = getMockBasePrice(t.ticker);
             const priceChange = newPrice - sessionStart;
 
+            const ma20 = calculateSMA(newHist, 20);
+            const rsi20 = calculateRSI(newHist, 20);
+
             cache[t.ticker] = {
                 price: newPrice.toFixed(2),
                 change: priceChange.toFixed(2),
                 changePercent: ((priceChange / sessionStart) * 100).toFixed(2),
                 prevClose: sessionStart.toFixed(2),
+                ma20: ma20 ? ma20.toFixed(2) : '---',
+                rsi20: rsi20 ? Math.round(rsi20) : '--',
                 status: 'SIM',
                 timestamp: new Date().toISOString(),
-                source: 'SIMULATION'
+                source: 'SIMULATION',
+                history: newHist
             };
         });
     };
