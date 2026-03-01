@@ -3,17 +3,17 @@ export const MARKETS = {
     // 1. INDICES (Market Overview)
     // ------------------------------------------------------------
     INDICES: [
-        { ticker: '^KS11', name: 'KOSPI' },
-        { ticker: '^IXIC', name: 'NASDAQ' },
-        { ticker: '^GSPC', name: 'S&P 500' },
-        { ticker: '^VIX', name: 'VIX Volatility Index' },
         { ticker: '^VKOSPI', name: 'KOSPI Volatility Index' },
+        { ticker: '^VIX', name: 'VIX Volatility Index' },
+        { ticker: '^KS11', name: 'KOSPI' },
+        { ticker: '^KS200', name: 'KOSPI 200 Futures (Proxy)' },
+        { ticker: '^GSPC', name: 'S&P 500' },
+        { ticker: 'ES=F', name: 'S&P 500 Futures' },
+        { ticker: '^IXIC', name: 'NASDAQ' },
+        { ticker: 'NQ=F', name: 'Nasdaq 100 Futures' },
         { ticker: 'BTC-USD', name: 'Bitcoin' },
         { ticker: 'GC=F', name: 'Gold' },
         { ticker: 'DX-Y.NYB', name: 'Dollar Index' },
-        { ticker: '^KS200', name: 'KOSPI 200 Futures (Proxy)' },
-        { ticker: 'NQ=F', name: 'Nasdaq 100 Futures' },
-        { ticker: 'ES=F', name: 'S&P 500 Futures' },
     ],
 
     // ------------------------------------------------------------
