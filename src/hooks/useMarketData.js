@@ -108,7 +108,7 @@ const fetchQuoteFromHTML = async (symbol) => {
     }
 };
 
-const fetchYahooData = async (symbol) => {
+const fetchYahooData = async (symbol, timeRange = '48h') => {
     // 1. Try Local Python Server (yfinance)
     try {
         const pyUrl = `http://localhost:5000/quote/${symbol}`;
@@ -131,10 +131,22 @@ const fetchYahooData = async (symbol) => {
     try {
         const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
         const baseUrl = isProduction ? '/api/yahoo-chart' : '/api/yahoo/v8/finance/chart';
-        // Construct URL based on symbol type (Indices get a shorter, higher res range: 48 hours)
-        const isIndex = symbol.startsWith('^') || symbol.includes('=F') || symbol.includes('BTC-');
-        const interval = isIndex ? '1h' : '1d';
-        const range = isIndex ? '2d' : '3mo'; // 2d covers 48 hours
+
+        let interval = '1d';
+        let range = '3mo';
+        let dataLimit = 0; // 0 means return all
+
+        if (symbol.startsWith('^') || symbol.includes('=F') || symbol.includes('BTC-')) {
+            switch (timeRange) {
+                case '48h': interval = '1h'; range = '2d'; break;
+                case '24h': interval = '15m'; range = '1d'; break;
+                case '12h': interval = '5m'; range = '1d'; dataLimit = 144; break;
+                case '6h': interval = '5m'; range = '1d'; dataLimit = 72; break;
+                case '1h': interval = '1m'; range = '1d'; dataLimit = 60; break;
+                default: interval = '1h'; range = '2d'; break;
+            }
+        }
+
         const query = `?interval=${interval}&range=${range}&includePrePost=true`;
 
         let url;
@@ -151,7 +163,13 @@ const fetchYahooData = async (symbol) => {
         if (!result) throw new Error('No result');
 
         const meta = result.meta;
-        const closes = result.indicators?.quote?.[0]?.close || [];
+        let closes = result.indicators?.quote?.[0]?.close || [];
+
+        // Truncate based on data limits if needed (e.g. 6h requested, but 1d given)
+        if (dataLimit > 0 && closes.length > dataLimit) {
+            closes = closes.slice(-dataLimit);
+        }
+
         const lastClose = closes[closes.length - 1];
 
         // HTML Scraping Fallback (US only)
@@ -235,7 +253,8 @@ const fetchYahooData = async (symbol) => {
 // --------------------------------------------------------------------------
 // HOOK
 // --------------------------------------------------------------------------
-export const useMarketData = (tickers) => {
+export const useMarketData = (tickers, options = {}) => {
+    const { timeRange = '48h' } = options;
     const [data, setData] = useState(() => globalCache.data || {});
     const [loading, setLoading] = useState(Object.keys(globalCache.data || {}).length === 0);
     const [isSimulationMode, setSimulationMode] = useState(false);
@@ -268,7 +287,7 @@ export const useMarketData = (tickers) => {
                 const failedTickers = [];
                 for (let i = 0; i < tickers.length; i += 10) {
                     const chunk = tickers.slice(i, i + 10);
-                    const chunkResults = await Promise.all(chunk.map(t => fetchYahooData(t.ticker)));
+                    const chunkResults = await Promise.all(chunk.map(t => fetchYahooData(t.ticker, timeRange)));
                     let chunkHasChanges = false;
 
                     chunkResults.forEach((res, idx) => {
@@ -338,7 +357,7 @@ export const useMarketData = (tickers) => {
                 if (!fmpSuccess) {
                     for (let i = 0; i < tickers.length; i += 10) {
                         const chunk = tickers.slice(i, i + 10);
-                        const chunkResults = await Promise.all(chunk.map(t => fetchYahooData(t.ticker)));
+                        const chunkResults = await Promise.all(chunk.map(t => fetchYahooData(t.ticker, timeRange)));
                         let chunkHasChanges = false;
 
                         chunkResults.forEach((res, idx) => {
@@ -390,7 +409,7 @@ export const useMarketData = (tickers) => {
             setLoading(false);
             isFetchingRef.current = false;
         }
-    }, [tickers, intervalTime]);
+    }, [tickers, intervalTime, timeRange]);
 
     // Update Helpers - Return TRUE if changed
     const updateCacheWithResult = (ticker, result, cache) => {

@@ -8,7 +8,8 @@ import VixGuideModal from '../components/VixGuideModal';
 import { Loader2, Info } from 'lucide-react';
 
 export default function DashboardPage({ tickers, title }) {
-    const { data, loading, isSimulation } = useMarketData(tickers);
+    const [timeRange, setTimeRange] = useState('48h');
+    const { data, loading, isSimulation } = useMarketData(tickers, { timeRange });
     const isHome = title.includes("Indices"); // Show guide on first page
     const [isVixModalOpen, setIsVixModalOpen] = useState(false);
 
@@ -66,6 +67,20 @@ export default function DashboardPage({ tickers, title }) {
                 </div>
             </header>
 
+            {isHome && (
+                <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+                    {['48h', '24h', '12h', '6h', '1h'].map(range => (
+                        <button
+                            key={range}
+                            onClick={() => setTimeRange(range)}
+                            className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-colors whitespace-nowrap ${timeRange === range ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 hover:bg-slate-700'}`}
+                        >
+                            {range}
+                        </button>
+                    ))}
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {sortedTickers.map((t) => {
                     const tickData = data[t.ticker];
@@ -100,6 +115,7 @@ export default function DashboardPage({ tickers, title }) {
                                 rsi14={tickData.rsi14}
                                 history={tickData.history}
                                 status={tickData.status}
+                                timeRange={timeRange}
                             />
                         );
                     }

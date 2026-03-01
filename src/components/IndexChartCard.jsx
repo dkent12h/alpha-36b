@@ -35,7 +35,7 @@ const SimpleAreaChart = ({ data, color = "#4ade80", height = 60 }) => {
     );
 };
 
-export default function IndexChartCard({ ticker, name, price, change, changePercent, ma20, rsi14, history, status }) {
+export default function IndexChartCard({ ticker, name, price, change, changePercent, ma20, rsi14, history, status, timeRange = '48h' }) {
     const isPositive = parseFloat(change) >= 0;
     const color = isPositive ? "#34d399" : "#f43f5e"; // emerald-400 vs rose-500
 
@@ -79,7 +79,7 @@ export default function IndexChartCard({ ticker, name, price, change, changePerc
                 {/* X-Axis labels */}
                 {history && history.length > 5 && (
                     <div className="w-full flex justify-between text-[10px] text-slate-500 mt-1 px-1">
-                        <span>48시간 전</span>
+                        <span>{timeRange} 전</span>
                         <span>최근 (현재)</span>
                     </div>
                 )}
