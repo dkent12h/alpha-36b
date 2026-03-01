@@ -1,14 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useMarketData } from '../hooks/useMarketData';
 import { getStrategyFeedback } from '../utils/strategy';
 import StockCard from '../components/StockCard';
 import IndexChartCard from '../components/IndexChartCard';
 import ActionGuide from '../components/ActionGuide';
-import { Loader2 } from 'lucide-react';
+import VixGuideModal from '../components/VixGuideModal';
+import { Loader2, Info } from 'lucide-react';
 
 export default function DashboardPage({ tickers, title }) {
     const { data, loading, isSimulation } = useMarketData(tickers);
     const isHome = title.includes("Indices"); // Show guide on first page
+    const [isVixModalOpen, setIsVixModalOpen] = useState(false);
 
     const sortedTickers = useMemo(() => {
         if (isHome || loading) return tickers; // 인덱스는 순서 유지
@@ -40,15 +42,26 @@ export default function DashboardPage({ tickers, title }) {
     }, [tickers, data, loading, isHome]);
 
     return (
-        <div className="space-y-6 pb-20">
+        <div className="space-y-6 pb-20 relative">
             <header className="mb-6 flex justify-between items-center">
-                <div>
-                    <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text text-transparent">
-                        {title}
-                    </h2>
-                    {isSimulation && <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">Simulating</span>}
+                <div className="flex flex-col items-start gap-1">
+                    <div className="flex items-center">
+                        <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text text-transparent mr-3">
+                            {title}
+                        </h2>
+                        {isHome && (
+                            <button
+                                onClick={() => setIsVixModalOpen(true)}
+                                className="inline-flex items-center text-xs bg-indigo-900/40 hover:bg-indigo-800/60 text-indigo-300 font-medium px-2.5 py-1.5 rounded-md border border-indigo-700/50 transition duration-200 shadow-sm"
+                            >
+                                <Info size={14} className="mr-1.5" />
+                                VIX 매뉴얼
+                            </button>
+                        )}
+                    </div>
+                    {isSimulation && <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700 w-fit mt-1">Simulating</span>}
                 </div>
-                <div className="text-xs text-slate-500 font-mono">
+                <div className="text-xs text-slate-500 font-mono text-right shrink-0">
                     {new Date().toLocaleTimeString()}
                 </div>
             </header>
@@ -102,6 +115,8 @@ export default function DashboardPage({ tickers, title }) {
                     );
                 })}
             </div>
+
+            <VixGuideModal isOpen={isVixModalOpen} onClose={() => setIsVixModalOpen(false)} />
         </div>
     );
 }
