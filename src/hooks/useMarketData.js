@@ -131,8 +131,12 @@ const fetchYahooData = async (symbol) => {
     try {
         const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
         const baseUrl = isProduction ? '/api/yahoo-chart' : '/api/yahoo/v8/finance/chart';
-        // Construct URL
-        const query = `?interval=1d&range=3mo&includePrePost=true`;
+        // Construct URL based on symbol type (Indices get a shorter, higher res range: 48 hours)
+        const isIndex = symbol.startsWith('^') || symbol.includes('=F') || symbol.includes('BTC-');
+        const interval = isIndex ? '1h' : '1d';
+        const range = isIndex ? '2d' : '3mo'; // 2d covers 48 hours
+        const query = `?interval=${interval}&range=${range}&includePrePost=true`;
+
         let url;
 
         if (isProduction) {
