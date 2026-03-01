@@ -79,7 +79,7 @@ export default function IndexChartCard({ ticker, name, price, change, changePerc
                 {/* X-Axis labels */}
                 {history && history.length > 5 && (
                     <div className="w-full flex justify-between text-[10px] text-slate-500 mt-1 px-1">
-                        <span>{history.length}거래일 전</span>
+                        <span>48시간 전</span>
                         <span>최근 (현재)</span>
                     </div>
                 )}
