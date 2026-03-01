@@ -373,11 +373,11 @@ export const useMarketData = (tickers) => {
                 globalCache.lastFetch = Date.now();
                 setData(newData);
             }
-            setLoading(false);
 
         } catch (error) {
             console.error('ExecuteStrategy Error:', error);
         } finally {
+            setLoading(false);
             isFetchingRef.current = false;
         }
     }, [tickers, intervalTime]);
