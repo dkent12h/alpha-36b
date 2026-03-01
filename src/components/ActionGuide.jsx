@@ -172,36 +172,31 @@ export default function ActionGuide() {
             <div className="mt-4 bg-slate-800/60 p-4 border-l-4 border-blue-500 rounded-lg shadow-sm">
                 <h4 className="text-blue-400 font-bold mb-3 text-sm flex items-center">
                     <Info size={16} className="mr-1.5" />
-                    💡 매수 신호별 실행 전략 (생존 헌법 연계)
+                    💡 매수 신호별 의미와 1차 진입 전략 (생존 헌법 연계)
                 </h4>
                 <div className="space-y-4 text-xs text-slate-300">
                     <div className="bg-slate-900/40 p-2.5 rounded border border-slate-700/50">
                         <div className="font-bold flex items-center mb-1">
+                            <span className="text-white text-sm mr-1">🛡️ 매수 (지지) & 🛒 매수 (눌림목)</span>
+                        </div>
+                        <p className="text-emerald-400 mb-2 font-bold text-[13px] border-b border-emerald-900 pb-1">👉 최적의 1차 진입 (정찰병 투입) 타점</p>
+                        <ul className="list-disc pl-4 space-y-1 text-slate-400">
+                            <li><span className="text-slate-300">"주가가 잠시 쉬어가며 20일선 근처로 내려와 가격이 싸진 상태(세일 기간)"</span>를 뜻합니다. 단지 대상이 다를 뿐입니다.</li>
+                            <li><strong className="text-indigo-400">매수 (눌림목):</strong> 애플, SCHD 등 <strong className="text-white">안전한 우량주/배당주</strong>가 세일할 때.</li>
+                            <li><strong className="text-emerald-400">매수 (지지):</strong> 테슬라, 엔비디아 등 <strong className="text-white">변동성 큰 성장주(알파)</strong>가 세일할 때.</li>
+                            <li><span className="text-blue-300 font-medium">[전략]</span> 아직 보유하지 않은 종목이라면, <strong className="text-white">이 두 신호가 떴을 때가 리스크가 가장 적은 완벽한 1차 진입(30%) 타이밍</strong>입니다. (이미 들고 있는데 또 떴다면, 가격이 더 싸진 것이니 2차 추매 전략)</li>
+                        </ul>
+                    </div>
+
+                    <div className="bg-slate-900/40 p-2.5 rounded border border-slate-700/50">
+                        <div className="font-bold flex items-center mb-1">
                             <span className="text-white text-sm mr-1">🚀 매수 (돌파)</span>
                         </div>
+                        <p className="text-rose-400 mb-2 font-bold text-[13px] border-b border-rose-900 pb-1">👉 1차 진입을 피해야 하는 (고점 추격) 타점</p>
                         <ul className="list-disc pl-4 space-y-1 text-slate-400">
-                            <li><span className="text-slate-300">[의미]</span> 성장주가 상승 추세를 타고 추세를 강화하는 시점 (RSI 60~70).</li>
-                            <li><span className="text-blue-300 font-medium">[전략]</span> 추세 확인 후 확실한 <strong className="text-blue-400">"3차 완성 (40%) 불타기"</strong> 비중 확대 타점으로 활용.</li>
-                        </ul>
-                    </div>
-
-                    <div className="bg-slate-900/40 p-2.5 rounded border border-slate-700/50">
-                        <div className="font-bold flex items-center mb-1">
-                            <span className="text-white text-sm mr-1">🛡️ 매수 (지지)</span>
-                        </div>
-                        <ul className="list-disc pl-4 space-y-1 text-slate-400">
-                            <li><span className="text-slate-300">[의미]</span> 과열을 식히며 성장주가 20일선에서 방어(지지)되는 첫 반등 위치.</li>
-                            <li><span className="text-emerald-300 font-medium">[전략]</span> 눌렸을 때 사는 <strong className="text-emerald-400">"2차 추매 (-5% 조정 시 30%)"</strong> 진입 타점으로 최적.</li>
-                        </ul>
-                    </div>
-
-                    <div className="bg-slate-900/40 p-2.5 rounded border border-slate-700/50">
-                        <div className="font-bold flex items-center mb-1">
-                            <span className="text-white text-sm mr-1">🛒 매수 (눌림목)</span>
-                        </div>
-                        <ul className="list-disc pl-4 space-y-1 text-slate-400">
-                            <li><span className="text-slate-300">[의미]</span> 우량주/배당주 등 안정성 높은 종목들이 20일선 근접 시 할인된 가격.</li>
-                            <li><span className="text-indigo-300 font-medium">[전략]</span> 신규 종목의 <strong className="text-indigo-400">"1차 진입 (정찰병 30%)"</strong> 혹은 차분한 모아가기 전략 수행.</li>
+                            <li><span className="text-slate-300">이미 주가가 크게 올라서 시장의 뜨거운 관심을 받고 있을 때(RSI 60~70) 뜹니다.</span></li>
+                            <li><span className="text-rose-300">이때 1차 진입으로 새로 들어가는 것은 소위 말하는 '고점 추격 매수(FOMO)'가 될 위험이 큽니다. 사자마자 물려버릴 확률이 높은 자리죠.</span></li>
+                            <li><span className="text-blue-300 font-medium">[전략]</span> 그러므로 돌파 신호는, 이미 지지/눌림목에서 싸게 사둔 덕분에 <strong className="text-white">안전판(수익)을 확보한 상태일 때</strong>, "추세가 강하네!" 하고 확신을 가지며 비워둔 비중 40%를 태우는 <strong className="text-blue-400">3차 불타기 용도</strong>로만 쓰시는 것이 핵심입니다.</li>
                         </ul>
                     </div>
                 </div>
@@ -260,27 +255,27 @@ export default function ActionGuide() {
             {/* 실전 매수 시나리오 */}
             <div className="mt-4 bg-slate-900 border border-slate-700 p-4 rounded-lg">
                 <h4 className="text-blue-400 font-bold mb-3 text-sm flex items-center">
-                    💡 실전 매수 시나리오 가이드
+                    💡 실전 매수 시나리오 요약
                 </h4>
                 <div className="space-y-4 text-sm text-slate-300">
                     <div>
                         <div className="font-bold text-white mb-1">1. 처음 사는 종목일 때 (1차 진입 - 정찰병)</div>
                         <ul className="list-disc pl-5 space-y-1 text-slate-400">
-                            <li>관심 있던 종목이 <span className="font-bold text-emerald-400">'매수 (눌림목)'</span> 혹은 <span className="font-bold text-emerald-400">'매수 (지지)'</span> 신호를 띄우면, 계획한 물량의 30%만 먼저 매수합니다.</li>
-                            <li>이때 <span className="font-bold text-blue-400">'매수 (돌파)'</span>에 처음 들어가는 건 이미 많이 오른 상태일 수 있어 위험할 수 있습니다.</li>
+                            <li>화면에 녹색 글씨인 <span className="font-bold text-emerald-400">'매수 (눌림목)'</span> 혹은 <span className="font-bold text-emerald-400">'매수 (지지)'</span>가 떠 있는 종목들만 골라서 1차 진입(30%) 하십시오.</li>
+                            <li>보라색 글씨의 <span className="font-bold text-blue-400">'매수 (돌파)'</span>가 뜬 상태일 때 처음 들어가는 건 '고점 추격(포모)' 위험이 매우 큽니다. "아직 내 것이 아니구나" 하고 일단 보내주십시오.</li>
                         </ul>
                     </div>
                     <div>
                         <div className="font-bold text-white mb-1">2. 샀는데 가격이 떨어질 때 (2차 추매)</div>
                         <ul className="list-disc pl-5 space-y-1 text-slate-400">
-                            <li>1차 매수 후 예상했던 -5% 부근 조정이 왔을 때, 시스템에 <span className="font-bold text-emerald-400">'매수 (지지)'</span>가 뜨면 "바닥을 다지고 있다"고 안심하며 2차 추매(30%)를 실행합니다.</li>
+                            <li>1차로 샀는데 주가가 더 빠져 예상했던 -5% 부근의 조정이 왔을 때, 마침 시스템에서 알파 종목에 다시 <span className="font-bold text-emerald-400">'매수 (지지)'</span>가 뜨면 "아, 바닥을 다지고 있구나" 하고 안심하며 2차 추매(30%)를 실행합니다.</li>
                         </ul>
                     </div>
                     <div>
                         <div className="font-bold text-white mb-1">3. 샀는데 가격이 오를 때 (3차 완성 - 불타기)</div>
                         <ul className="list-disc pl-5 space-y-1 text-slate-400">
-                            <li>주가가 올라 내 평단가보다 수익권이 되었을 때, 화면에 <span className="font-bold text-blue-400">'매수 (돌파)'</span> 신호가 뜬다면?</li>
-                            <li>"상승 추세를 탔다!"고 확신을 갖고 비워두었던 <strong className="text-white">마지막 40% 물량을 태워 불타기(3차 완성)</strong>를 합니다.</li>
+                            <li>주가가 오르기 시작해서 내 평단가보다 수익권이 되었을 때, 마침 화면에 <span className="font-bold text-blue-400">'매수 (돌파)'</span> 신호가 뜬다면?</li>
+                            <li>이때는 "상승 추세를 제대로 탔다!"라고 확신을 갖고 비워두었던 <strong className="text-white">마지막 40% 물량을 태워 불타기(3차 완성)</strong>를 하는 겁니다.</li>
                         </ul>
                     </div>
                 </div>
