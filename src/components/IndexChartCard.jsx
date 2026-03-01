@@ -35,7 +35,7 @@ const SimpleAreaChart = ({ data, color = "#4ade80", height = 60 }) => {
     );
 };
 
-export default function IndexChartCard({ ticker, name, price, change, changePercent, ma20, rsi20, history, status }) {
+export default function IndexChartCard({ ticker, name, price, change, changePercent, ma20, rsi14, history, status }) {
     const isPositive = parseFloat(change) >= 0;
     const color = isPositive ? "#34d399" : "#f43f5e"; // emerald-400 vs rose-500
 
@@ -60,7 +60,7 @@ export default function IndexChartCard({ ticker, name, price, change, changePerc
             <div className="flex justify-between items-center text-xs mb-2 bg-slate-900/50 rounded p-2">
                 <div className="flex space-x-3">
                     <span className="text-slate-400">MA20: <span className="text-white font-mono">{ma20 || '---'}</span></span>
-                    <span className="text-slate-400">RSI: <span className={`font-mono ${rsi20 >= 70 ? 'text-rose-400' : rsi20 <= 30 ? 'text-emerald-400' : 'text-white'}`}>{rsi20 || '--'}</span></span>
+                    <span className="text-slate-400">RSI: <span className={`font-mono ${rsi14 >= 70 ? 'text-rose-400' : rsi14 <= 30 ? 'text-emerald-400' : 'text-white'}`}>{rsi14 || '--'}</span></span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded ${status === 'SIMULATED' ? 'bg-amber-900/50 text-amber-400' : 'bg-slate-700 text-slate-400'}`}>
                     {status === 'AFTER' ? 'After Mkt' : status}

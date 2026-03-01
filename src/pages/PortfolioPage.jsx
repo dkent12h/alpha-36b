@@ -150,11 +150,11 @@ export default function PortfolioPage({ initialHoldings = [], type = 'KR' }) {
                             <div className="md:w-24 w-full flex justify-between md:flex-col md:items-end md:justify-center mt-2 md:mt-0 md:ml-4 text-xs">
                                 <div className={clsx(
                                     "px-2 py-0.5 rounded font-mono font-bold w-fit",
-                                    (tickData.rsi20 >= 70) ? "bg-rose-500/20 text-rose-400" :
-                                        (tickData.rsi20 <= 30) ? "bg-emerald-500/20 text-emerald-400" :
+                                    (tickData.rsi14 >= 70) ? "bg-rose-500/20 text-rose-400" :
+                                        (tickData.rsi14 <= 30) ? "bg-emerald-500/20 text-emerald-400" :
                                             "bg-slate-700 text-slate-300"
                                 )}>
-                                    RSI {tickData.rsi20 || '--'}
+                                    RSI {tickData.rsi14 || '--'}
                                 </div>
                                 <div className={clsx(
                                     "mt-1 font-medium",

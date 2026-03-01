@@ -23,11 +23,11 @@ const LeverageCard = ({ ticker, name, data, settings, onSaveSettings }) => {
     const isPositive = change >= 0;
 
     const ma20 = data?.ma20 || '---';
-    const rsi20 = data?.rsi20 || '--';
-    const isOverbought = rsi20 >= 70;
-    const isOversold = rsi20 <= 30;
+    const rsi14 = data?.rsi14 || '--';
+    const isOverbought = rsi14 >= 70;
+    const isOversold = rsi14 <= 30;
 
-    const feedback = getStrategyFeedback(price, ma20, rsi20);
+    const feedback = getStrategyFeedback(price, ma20, rsi14);
     const signal = feedback.action;
     const signalColor = feedback.color;
 
@@ -91,7 +91,7 @@ const LeverageCard = ({ ticker, name, data, settings, onSaveSettings }) => {
                                     isOversold ? "bg-emerald-500/20 text-emerald-400" :
                                         "bg-slate-700 text-slate-300"
                             )}>
-                                RSI {rsi20}
+                                RSI {rsi14}
                             </div>
                         </div>
                         <div className="text-right">

@@ -2,11 +2,11 @@
  * Alpha 3.6B Strategy Engine (Korean Ver.)
  */
 
-export const getStrategyFeedback = (price, ma20, rsi20, strategyType = 'CORE') => {
+export const getStrategyFeedback = (price, ma20, rsi14, strategyType = 'CORE') => {
     // Convert inputs
     const p = parseFloat(price);
     const m = parseFloat(ma20);
-    const r = parseFloat(rsi20);
+    const r = parseFloat(rsi14);
 
     if (isNaN(p) || isNaN(m) || isNaN(r)) {
         return {
@@ -18,6 +18,18 @@ export const getStrategyFeedback = (price, ma20, rsi20, strategyType = 'CORE') =
     }
 
     const disparity = ((p - m) / m) * 100;
+
+    // ---------------------------------------------------------
+    // 0. STRONG SELL (강력 매도) - 초과열 상태
+    // ---------------------------------------------------------
+    if (r >= 75 && disparity >= 10) {
+        return {
+            action: "강력 매도 (초과열)",
+            reason: `RSI ${r.toFixed(1)} 단기 폭등 및 이격도 과다(+${disparity.toFixed(1)}%). 전량 익절을 고려하세요.`,
+            color: "text-red-500 font-extrabold animate-pulse",
+            type: 'SELL'
+        };
+    }
 
     // ---------------------------------------------------------
     // 1. SELL (Harvest) - 공통 규칙
@@ -33,7 +45,33 @@ export const getStrategyFeedback = (price, ma20, rsi20, strategyType = 'CORE') =
     }
 
     // ---------------------------------------------------------
-    // 2. WAIT (Danger Zone) - 공통 규칙
+    // 2. STRONG STOP LOSS (강력 손절) - 폭락 구간
+    // 20일선 대비 -10% 이상 이탈 또는 RSI 극저조 하락 시
+    // ---------------------------------------------------------
+    if (disparity <= -10.0 && r < 35) {
+        return {
+            action: "강력 손절 (폭락)",
+            reason: `20일선 -10% 이상 폭락 및 RSI ${r.toFixed(1)}. 데드캣 바운스도 위험한 구간입니다. 즉시 대피하세요.`,
+            color: "text-red-600 font-extrabold animate-bounce",
+            type: 'SELL'
+        };
+    }
+
+    // ---------------------------------------------------------
+    // 2-1. CRITICAL SELL (Stop Loss) - 하방 열림
+    // 20일선 대비 -5% 이탈 & RSI 40 미만 시 기계적 손절
+    // ---------------------------------------------------------
+    if (disparity <= -5.0 && r < 40) {
+        return {
+            action: "손절 (하방열림)",
+            reason: `20일선 -5% 이탈 및 RSI ${r.toFixed(1)}📉. 추가 급락 위험이 큽니다. 비중 조절을 권장합니다.`,
+            color: "text-rose-500 font-bold animate-pulse",
+            type: 'SELL'
+        };
+    }
+
+    // ---------------------------------------------------------
+    // 3. WAIT (Danger Zone) - 공통 규칙
     // 20일선 아래는 하락 추세 -> 관망
     // ---------------------------------------------------------
     if (p < m) {
@@ -46,7 +84,23 @@ export const getStrategyFeedback = (price, ma20, rsi20, strategyType = 'CORE') =
     }
 
     // ---------------------------------------------------------
-    // 3. BUY STRATEGIES (Conditional)
+    // 3. STRONG BUY (강력 매수) - 공통 규칙
+    // ---------------------------------------------------------
+    // 조건 1: 극과매도 (RSI 30 미만) + 너무 깊지 않은 하락 (이격도 -10% 이내)
+    // 조건 2: 20일선 돌파 초입 (이격도 0~1%) + 바닥 탈출 (RSI 40~50 구간 상승)
+    if ((r <= 32 && disparity > -10) || (disparity >= 0 && disparity <= 1.0 && r >= 40 && r <= 50)) {
+        return {
+            action: "강력 매수 (바닥/돌파)",
+            reason: (r <= 32)
+                ? `RSI ${r.toFixed(1)} 극과매도. 반등을 노리는 적극 매수 타점입니다.`
+                : `20일선 안착 후 상승 전환 시작. 강력한 매수 타이밍입니다.`,
+            color: "text-purple-400 font-extrabold animate-pulse",
+            type: 'BUY'
+        };
+    }
+
+    // ---------------------------------------------------------
+    // 4. BUY STRATEGIES (Conditional)
     // ---------------------------------------------------------
 
     // Strategy 2: 눌림목 (CORE, SAFE, INCOME)

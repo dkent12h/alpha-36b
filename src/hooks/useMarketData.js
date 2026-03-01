@@ -384,15 +384,15 @@ export const useMarketData = (tickers) => {
 
     // Update Helpers - Return TRUE if changed
     const updateCacheWithResult = (ticker, result, cache) => {
-        let ma20 = null, rsi20 = null;
+        let ma20 = null, rsi14 = null;
         if (result.history && result.history.length >= 20) {
             globalCache.historyData[ticker] = result.history;
             ma20 = calculateSMA(result.history, 20);
-            rsi20 = calculateRSI(result.history, 20);
+            rsi14 = calculateRSI(result.history, 14);
         } else if (globalCache.historyData[ticker]) {
             const hist = globalCache.historyData[ticker];
             ma20 = calculateSMA(hist, 20);
-            rsi20 = calculateRSI(hist, 20);
+            rsi14 = calculateRSI(hist, 14);
         }
 
         const baseline = result.prevClose || result.price;
@@ -426,7 +426,7 @@ export const useMarketData = (tickers) => {
             prevClose: baseline.toFixed(2),
             lastCompletedClose: result.lastCompletedClose || baseline.toFixed(2),
             ma20: ma20 ? ma20.toFixed(2) : '---',
-            rsi20: rsi20 ? Math.round(rsi20) : '--',
+            rsi14: rsi14 ? Math.round(rsi14) : '--',
             status: status,
             timestamp: new Date().toISOString(),
             source: result.source,
@@ -442,11 +442,11 @@ export const useMarketData = (tickers) => {
         const change = item.change;
         const changePercent = item.changesPercentage;
 
-        let ma20 = null, rsi20 = null;
+        let ma20 = null, rsi14 = null;
         if (globalCache.historyData[ticker]) {
             const hist = globalCache.historyData[ticker];
             ma20 = calculateSMA(hist, 20);
-            rsi20 = calculateRSI(hist, 20);
+            rsi14 = calculateRSI(hist, 14);
         }
 
         const priceDisplay = price.toFixed(2);
@@ -463,7 +463,7 @@ export const useMarketData = (tickers) => {
             changePercent: changePercent.toFixed(2),
             prevClose: prevClose.toFixed(2),
             ma20: ma20 ? ma20.toFixed(2) : '---',
-            rsi20: rsi20 ? Math.round(rsi20) : '--',
+            rsi14: rsi14 ? Math.round(rsi14) : '--',
             status: 'FMP_LIVE',
             timestamp: new Date().toISOString(),
             source: 'FMP'
@@ -488,7 +488,7 @@ export const useMarketData = (tickers) => {
             const priceChange = newPrice - sessionStart;
 
             const ma20 = calculateSMA(newHist, 20);
-            const rsi20 = calculateRSI(newHist, 20);
+            const rsi14 = calculateRSI(newHist, 14);
 
             cache[t.ticker] = {
                 price: newPrice.toFixed(2),
@@ -496,7 +496,7 @@ export const useMarketData = (tickers) => {
                 changePercent: ((priceChange / sessionStart) * 100).toFixed(2),
                 prevClose: sessionStart.toFixed(2),
                 ma20: ma20 ? ma20.toFixed(2) : '---',
-                rsi20: rsi20 ? Math.round(rsi20) : '--',
+                rsi14: rsi14 ? Math.round(rsi14) : '--',
                 status: 'SIM',
                 timestamp: new Date().toISOString(),
                 source: 'SIMULATION',

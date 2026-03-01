@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useMarketData } from '../hooks/useMarketData';
+import { getStrategyFeedback } from '../utils/strategy';
 import StockCard from '../components/StockCard';
 import IndexChartCard from '../components/IndexChartCard';
 import ActionGuide from '../components/ActionGuide';
@@ -8,6 +9,35 @@ import { Loader2 } from 'lucide-react';
 export default function DashboardPage({ tickers, title }) {
     const { data, loading, isSimulation } = useMarketData(tickers);
     const isHome = title.includes("Indices"); // Show guide on first page
+
+    const sortedTickers = useMemo(() => {
+        if (isHome || loading) return tickers; // 인덱스는 순서 유지
+
+        return [...tickers].sort((a, b) => {
+            const dataA = data[a.ticker];
+            const dataB = data[b.ticker];
+
+            if (!dataA || !dataB) return 0;
+            if (dataA.price === undefined || dataB.price === undefined) return 0;
+
+            const feedA = getStrategyFeedback(dataA.price, dataA.ma20, dataA.rsi14, a.strategy).action;
+            const feedB = getStrategyFeedback(dataB.price, dataB.ma20, dataB.rsi14, b.strategy).action;
+
+            const getPriority = (action) => {
+                if (action.includes('강력 매수')) return 1;
+                if (action.includes('강력 매도')) return 2;
+                if (action.includes('강력 손절')) return 3;
+                if (action.includes('매수')) return 4;
+                if (action.includes('매도') && !action.includes('매도 (초과열)')) return 5; // 강력 매도와 겹치지 않게
+                if (action.includes('손절')) return 6;
+                if (action.includes('관망') || action.includes('이탈')) return 7;
+                if (action.includes('홀딩')) return 8;
+                return 9; // 로딩 중 등 예외상황
+            };
+
+            return getPriority(feedA) - getPriority(feedB);
+        });
+    }, [tickers, data, loading, isHome]);
 
     return (
         <div className="space-y-6 pb-20">
@@ -24,7 +54,7 @@ export default function DashboardPage({ tickers, title }) {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {tickers.map((t) => {
+                {sortedTickers.map((t) => {
                     const tickData = data[t.ticker];
 
                     // Skeleton Loader for empty data
@@ -54,7 +84,7 @@ export default function DashboardPage({ tickers, title }) {
                                 change={tickData.change}
                                 changePercent={tickData.changePercent}
                                 ma20={tickData.ma20}
-                                rsi20={tickData.rsi20}
+                                rsi14={tickData.rsi14}
                                 history={tickData.history}
                                 status={tickData.status}
                             />
@@ -66,6 +96,7 @@ export default function DashboardPage({ tickers, title }) {
                             key={t.ticker}
                             ticker={t.ticker}
                             name={t.name}
+                            strategy={t.strategy}
                             {...tickData}
                         />
                     );

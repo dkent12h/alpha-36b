@@ -8,13 +8,13 @@ import { differenceInCalendarDays, parseISO } from 'date-fns';
 
 import { getStrategyFeedback } from '../utils/strategy';
 
-const StockCard = ({ ticker, name, price, change, changePercent, ma20, rsi20, status, earningsDate }) => {
+const StockCard = ({ ticker, name, price, change, changePercent, ma20, rsi14, status, earningsDate, strategy }) => {
     const isPositive = parseFloat(change) >= 0;
-    const isOverbought = rsi20 >= 70;
-    const isOversold = rsi20 <= 30;
+    const isOverbought = rsi14 >= 70;
+    const isOversold = rsi14 <= 30;
 
     // Use Strategy Engine
-    const feedback = getStrategyFeedback(price, ma20, rsi20);
+    const feedback = getStrategyFeedback(price, ma20, rsi14, strategy);
     const signal = feedback.action;
     const signalColor = feedback.color;
 
@@ -100,7 +100,7 @@ const StockCard = ({ ticker, name, price, change, changePercent, ma20, rsi20, st
                             isOversold ? "bg-emerald-500/20 text-emerald-400" :
                                 "bg-slate-700 text-slate-300"
                     )}>
-                        RSI {rsi20}
+                        RSI {rsi14}
                     </div>
                     {isBelowMA20 && (
                         <div className="flex items-center text-amber-400 animate-pulse">
