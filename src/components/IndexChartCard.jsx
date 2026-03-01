@@ -68,11 +68,20 @@ export default function IndexChartCard({ ticker, name, price, change, changePerc
             </div>
 
             {/* Chart Area */}
-            <div className="h-16 w-full bg-slate-900/30 rounded-lg p-1 flex items-center justify-center">
-                {history && history.length > 5 ? (
-                    <SimpleAreaChart data={history} color={color} height={60} />
-                ) : (
-                    <span className="text-xs text-slate-600">No chart data</span>
+            <div className="bg-slate-900/40 rounded-lg p-2 flex flex-col items-center justify-center">
+                <div className="h-14 w-full flex items-end">
+                    {history && history.length > 5 ? (
+                        <SimpleAreaChart data={history} color={color} height={56} />
+                    ) : (
+                        <span className="text-xs text-slate-600 w-full text-center">No chart data</span>
+                    )}
+                </div>
+                {/* X-Axis labels */}
+                {history && history.length > 5 && (
+                    <div className="w-full flex justify-between text-[10px] text-slate-500 mt-1 px-1">
+                        <span>{history.length}거래일 전</span>
+                        <span>최근 (현재)</span>
+                    </div>
                 )}
             </div>
         </div>

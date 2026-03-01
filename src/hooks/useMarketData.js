@@ -55,7 +55,9 @@ const getMockBasePrice = (ticker) => {
     const prices = {
         '005930.KS': 55000, 'NVDA': 130, 'AAPL': 185, 'MSFT': 410, 'GOOGL': 175, 'TSLA': 250,
         'AMD': 110, 'VOO': 540, 'QQQM': 210, 'SOXX': 240, 'TLT': 88, 'SGOV': 100.5,
-        'SOXL': 64.03, 'TQQQ': 52.02, 'NVDL': 88.97, 'TSLL': 15.97
+        'SOXL': 64.03, 'TQQQ': 52.02, 'NVDL': 88.97, 'TSLL': 15.97,
+        '^KS11': 2500, '^IXIC': 16000, '^GSPC': 5000, '^VIX': 15, '^VKOSPI': 15,
+        'BTC-USD': 60000, 'GC=F': 2400, 'DX-Y.NYB': 105, '^KS200': 330, 'NQ=F': 18000, 'ES=F': 5100,
     };
     const base = prices[ticker] || 100;
     return base + (Math.random() - 0.5) * base * 0.05;
@@ -356,15 +358,19 @@ export const useMarketData = (tickers) => {
             }
 
             // =========================================================================
-            // PHASE 3: SIMULATION FALLBACK
+            // PHASE 3: SIMULATION FALLBACK FOR MISSING TICKERS
             // =========================================================================
-            if (successCount === 0) {
-                // If APIs are blocked or failing, simulate the requested tickers
-                runSimulation(tickers, newData);
-                setSimulationMode(true);
-                hasChanges = true; // Sim always changes
+            const missingTickers = tickers.filter(t => !newData[t.ticker]);
+            if (missingTickers.length > 0) {
+                // Simulate only the tickers that failed all APIs
+                runSimulation(missingTickers, newData);
+
+                // If EVERYTHING failed, we are in full Simulation Mode
+                if (successCount === 0) setSimulationMode(true);
+
+                hasChanges = true;
             } else {
-                setSimulationMode(false);
+                if (successCount > 0) setSimulationMode(false);
             }
 
             // ONLY UPDATE STATE IF DATA CHANGED
