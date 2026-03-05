@@ -3,6 +3,8 @@ export const MARKETS = {
     // 1. INDICES (Market Overview)
     // ------------------------------------------------------------
     INDICES: [
+        { ticker: '^VKOSPI', name: 'KOSPI Volatility Index' },
+        { ticker: '^VIX', name: 'VIX' },
         { ticker: '^KS11', name: 'KOSPI' },
         { ticker: '^IXIC', name: 'NASDAQ' },
         { ticker: '^GSPC', name: 'S&P 500' },
@@ -12,7 +14,6 @@ export const MARKETS = {
         { ticker: '^KS200', name: 'KOSPI 200 Futures (Proxy)' },
         { ticker: 'NQ=F', name: 'Nasdaq 100 Futures' },
         { ticker: 'ES=F', name: 'S&P 500 Futures' },
-
     ],
 
     // ------------------------------------------------------------
@@ -67,6 +68,8 @@ export const MARKETS = {
         { ticker: 'TQQQ', name: 'TQQQ (3x Tech)', strategy: 'ALPHA' },
         { ticker: 'NVDL', name: 'NVDL (2x NVDA)', strategy: 'ALPHA' },
         { ticker: 'TSLL', name: 'TSLL (2x TSLA)', strategy: 'ALPHA' },
+        { ticker: 'EWY', name: 'EWY (MSCI Korea)', strategy: 'CORE' },
+        { ticker: 'KORU', name: 'KORU (3x Korea)', strategy: 'ALPHA' },
 
         // Cash
         { ticker: 'SGOV', name: 'SGOV / KOFR (현금)', strategy: 'SAFE' },
@@ -201,7 +204,7 @@ export const MARKETS = {
         { ticker: 'TQQQ', name: 'TQQQ (3x Tech)', strategy: 'ALPHA' },
         { ticker: 'NVDL', name: 'NVDL (2x NVDA)', strategy: 'ALPHA' },
         { ticker: 'TSLL', name: 'TSLL (2x TSLA)', strategy: 'ALPHA' },
-
+        { ticker: 'KORU', name: 'KORU (3x Korea)', strategy: 'ALPHA' },
     ],
 
     // ------------------------------------------------------------
