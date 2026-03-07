@@ -102,6 +102,7 @@ export const MARKETS = {
         { ticker: 'XLV', name: 'Health Care Select Sector SPDR', strategy: 'CORE' },
         { ticker: 'XLU', name: 'Utilities Select Sector SPDR', strategy: 'INCOME' },
         { ticker: 'XLP', name: 'Consumer Staples Select Sector SPDR', strategy: 'INCOME' },
+        { ticker: 'EWY', name: 'EWY (MSCI Korea)', strategy: 'CORE' },
     ],
 
     // ------------------------------------------------------------
@@ -150,6 +151,7 @@ export const MARKETS = {
         { ticker: 'NOW', name: 'ServiceNow', strategy: 'ALPHA' },
         { ticker: 'LITP', name: 'Sprott Lithium Miners ETF', strategy: 'ALPHA' },
         { ticker: 'BOTZ', name: 'Global X Robotics & AI ETF', strategy: 'ALPHA' },
+        { ticker: 'KORU', name: 'KORU (3x Korea)', strategy: 'ALPHA' },
     ],
 
     // ------------------------------------------------------------
