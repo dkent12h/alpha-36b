@@ -385,7 +385,7 @@ export const useMarketData = (tickers) => {
         } finally {
             isFetchingRef.current = false;
         }
-    }, [tickers, intervalTime]);
+    }, [tickers]);
 
     // Update Helpers - Return TRUE if changed
     const updateCacheWithResult = (ticker, result, cache) => {

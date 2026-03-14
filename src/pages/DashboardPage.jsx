@@ -7,7 +7,8 @@ import ActionGuide from '../components/ActionGuide';
 import { Loader2 } from 'lucide-react';
 
 export default function DashboardPage({ tickers, title }) {
-    const { data, loading, isSimulation } = useMarketData(tickers);
+    const memoTickers = useMemo(() => tickers, [tickers]);
+    const { data, loading, isSimulation } = useMarketData(memoTickers);
     const isHome = title.includes("Indices"); // Show guide on first page
 
     const sortedTickers = useMemo(() => {

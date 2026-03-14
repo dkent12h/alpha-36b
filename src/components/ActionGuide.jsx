@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useMemo } from 'react';
 import { useMarketData } from '../hooks/useMarketData';
 import { MARKETS } from '../constants';
 import { getStrategyFeedback } from '../utils/strategy';
@@ -6,13 +6,13 @@ import { CheckCircle, AlertTriangle, TrendingUp, DollarSign, Info } from 'lucide
 
 export default function ActionGuide() {
     // Monitor all relevant tickers
-    const allTickers = [
+    const allTickers = useMemo(() => [
         ...MARKETS.BLUE_CHIP,
         ...MARKETS.GROWTH,
         ...MARKETS.SECTORS,
         ...MARKETS.ISA,
         ...MARKETS.KOREA
-    ];
+    ], []);
 
     const { data, loading } = useMarketData(allTickers);
 
