@@ -14,7 +14,11 @@ const StockCard = ({ ticker, name, price, change, changePercent, ma20, rsi14, st
     const isOversold = rsi14 <= 30;
 
     // Use Strategy Engine
-    const feedback = getStrategyFeedback(price, ma20, rsi14, strategy);
+    const tickerInfo = { ticker, name, strategy, group: props.group || (ticker.includes('.KS') || ticker.includes('.KQ') ? 'KR_KOSPI' : 'US_SINGLE') };
+    // Handle props passed from DashboardPage via spread {...tickData}
+    const data = { price, change, changePercent, ma20, rsi14, rsi21: props.rsi21, bollinger: props.bollinger, volumeRatio: props.volumeRatio, status, ma200: props.ma200 };
+    
+    const feedback = getStrategyFeedback(data, tickerInfo);
     const signal = feedback.action;
     const signalColor = feedback.color;
 

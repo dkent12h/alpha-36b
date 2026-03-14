@@ -1,14 +1,21 @@
 /**
  * Alpha 3.6B Strategy Engine (Korean Ver.)
+ * Enhanced with Super Strong Buy (초강력 매수) logic
  */
 
-export const getStrategyFeedback = (price, ma20, rsi14, strategyType = 'CORE') => {
+export const getStrategyFeedback = (data, tickerInfo = {}) => {
+    const { price, ma20, ma200, rsi14, rsi21, bollinger, volumeRatio, status } = data;
+    const { strategy: strategyType = 'CORE', group = 'US_SINGLE' } = tickerInfo;
+
     // Convert inputs
     const p = parseFloat(price);
     const m = parseFloat(ma20);
-    const r = parseFloat(rsi14);
+    const r14 = parseFloat(rsi14);
+    const r21 = parseFloat(rsi21);
+    const volRatio = parseFloat(volumeRatio) || 0;
+    const m200 = parseFloat(ma200) || null;
 
-    if (isNaN(p) || isNaN(m) || isNaN(r)) {
+    if (isNaN(p) || isNaN(m) || isNaN(r14)) {
         return {
             action: "로딩 중...",
             reason: "데이터를 불러오는 중입니다...",
@@ -18,61 +25,107 @@ export const getStrategyFeedback = (price, ma20, rsi14, strategyType = 'CORE') =
     }
 
     const disparity = ((p - m) / m) * 100;
+    const disparity200 = m200 ? ((p - m200) / m200) * 100 : null;
+
+    // Helper: Global Indices (VIX/VKOSPI) from data if available, 
+    // but strategy currently receives individual ticker data. 
+    // We expect the caller to pass indices or we assume they are checked elsewhere.
+    // In this app, VIX and VKOSPI are tracked as tickers.
+    // For now, let's assume we pass them in or fetch from global state.
+    const vix = parseFloat(window.vix_value) || 20; // Fallback to 20 if not set
+    const vkospi = parseFloat(window.vkospi_value) || 20;
 
     // ---------------------------------------------------------
-    // 0. STRONG SELL (강력 매도) - 초과열 상태
+    // 1. SUPER STRONG BUY (초강력 매수) - Groups Specific
     // ---------------------------------------------------------
-    if (r >= 75 && disparity >= 10) {
+    let isSuperStrong = false;
+    let ssbReason = "";
+
+    const bbBroken = bollinger && p <= bollinger.lower;
+
+    if (group === 'US_ETF') {
+        if (r14 <= 30 && bbBroken && vix >= 30 && volRatio >= 2.0 && (disparity200 !== null && disparity200 >= -7)) {
+            isSuperStrong = true;
+            ssbReason = "대형 ETF 초강력 타점: RSI 30이하 + BB하단이탈 + VIX 30이상 + 거래량 2배 + 200일선 -7%이내.";
+        }
+    } else if (group === 'US_SINGLE') {
+        if (r14 <= 30 && bbBroken && vix >= 25 && volRatio >= 2.0 && (disparity200 !== null && disparity200 >= -10)) {
+            isSuperStrong = true;
+            ssbReason = "대형주 초강력 타점: RSI 30이하 + BB하단이탈 + VIX 25이상 + 거래량 2배 + 200일선 -10%이내.";
+        }
+    } else if (group === 'US_SMALL') {
+        if (r21 <= 25 && bbBroken && vix >= 35 && volRatio >= 3.0) {
+            isSuperStrong = true;
+            ssbReason = "소형주 초강력 타점: RSI(21) 25이하 + BB하단이탈 + VIX 35이상 + 거래량 3배.";
+        }
+    } else if (group === 'KR_KOSPI') {
+        if (r14 <= 30 && bbBroken && vkospi >= 25 && volRatio >= 2.0) {
+            isSuperStrong = true;
+            ssbReason = "코스피 초강력 타점: RSI 30이하 + BB하단이탈 + VKOSPI 25이상 + 거래량 2배.";
+        }
+    } else if (group === 'KR_KOSDAQ_MID') {
+        if (r21 <= 25 && bbBroken && vkospi >= 30 && volRatio >= 3.0) {
+            isSuperStrong = true;
+            ssbReason = "코스닥 중형주 초강력 타점: RSI(21) 25이하 + BB하단이탈 + VKOSPI 30이상 + 거래량 3배.";
+        }
+    }
+
+    if (isSuperStrong) {
+        return {
+            action: "초강력 매수 (All-In)",
+            reason: ssbReason,
+            color: "text-yellow-400 font-black animate-bounce",
+            type: 'SUPER_BUY'
+        };
+    }
+
+    // ---------------------------------------------------------
+    // 2. STRONG SELL (강력 매도) - 초과열 상태
+    // ---------------------------------------------------------
+    if (r14 >= 75 && disparity >= 10) {
         return {
             action: "강력 매도 (초과열)",
-            reason: `RSI ${r.toFixed(1)} 단기 폭등 및 이격도 과다(+${disparity.toFixed(1)}%). 전량 익절을 고려하세요.`,
+            reason: `RSI ${r14.toFixed(1)} 단기 폭등 및 이격도 과다(+${disparity.toFixed(1)}%). 전량 익절을 고려하세요.`,
             color: "text-red-500 font-extrabold animate-pulse",
             type: 'SELL'
         };
     }
 
     // ---------------------------------------------------------
-    // 1. SELL (Harvest) - 공통 규칙
-    // RSI 70 이상은 과열 구간 -> 매수 금지 및 분할 익절
+    // 3. SELL (Harvest)
     // ---------------------------------------------------------
-    if (r >= 70) {
+    if (r14 >= 70) {
         return {
             action: "매도 (익절)",
-            reason: `RSI ${r.toFixed(1)} (과열). 분할 매도로 수익을 챙기세요.`,
+            reason: `RSI ${r14.toFixed(1)} (과열). 분할 매도로 수익을 챙기세요.`,
             color: "text-red-500 font-bold",
             type: 'SELL'
         };
     }
 
     // ---------------------------------------------------------
-    // 2. STRONG STOP LOSS (강력 손절) - 폭락 구간
-    // 20일선 대비 -10% 이상 이탈 또는 RSI 극저조 하락 시
+    // 4. STRONG STOP LOSS (강력 손절)
     // ---------------------------------------------------------
-    if (disparity <= -10.0 && r < 35) {
+    if (disparity <= -10.0 && r14 < 35) {
         return {
             action: "강력 손절 (폭락)",
-            reason: `20일선 -10% 이상 폭락 및 RSI ${r.toFixed(1)}. 데드캣 바운스도 위험한 구간입니다. 즉시 대피하세요.`,
+            reason: `20일선 -10% 이상 폭락 및 RSI ${r14.toFixed(1)}. 데드캣 바운스도 위험한 구간입니다. 즉시 대피하세요.`,
             color: "text-red-600 font-extrabold animate-bounce",
             type: 'SELL'
         };
     }
 
-    // ---------------------------------------------------------
-    // 2-1. CRITICAL SELL (Stop Loss) - 하방 열림
-    // 20일선 대비 -5% 이탈 & RSI 40 미만 시 기계적 손절
-    // ---------------------------------------------------------
-    if (disparity <= -5.0 && r < 40) {
+    if (disparity <= -5.0 && r14 < 40) {
         return {
             action: "손절 (하방열림)",
-            reason: `20일선 -5% 이탈 및 RSI ${r.toFixed(1)}📉. 추가 급락 위험이 큽니다. 비중 조절을 권장합니다.`,
+            reason: `20일선 -5% 이탈 및 RSI ${r14.toFixed(1)}📉. 추가 급락 위험이 큽니다. 비중 조절을 권장합니다.`,
             color: "text-rose-500 font-bold animate-pulse",
             type: 'SELL'
         };
     }
 
     // ---------------------------------------------------------
-    // 3. WAIT (Danger Zone) - 공통 규칙
-    // 20일선 아래는 하락 추세 -> 관망
+    // 5. WAIT (Danger Zone)
     // ---------------------------------------------------------
     if (p < m) {
         return {
@@ -84,15 +137,13 @@ export const getStrategyFeedback = (price, ma20, rsi14, strategyType = 'CORE') =
     }
 
     // ---------------------------------------------------------
-    // 3. STRONG BUY (강력 매수) - 공통 규칙
+    // 6. STRONG BUY (강력 매수) - 공통 규칙
     // ---------------------------------------------------------
-    // 조건 1: 극과매도 (RSI 30 미만) + 너무 깊지 않은 하락 (이격도 -10% 이내)
-    // 조건 2: 20일선 돌파 초입 (이격도 0~1%) + 바닥 탈출 (RSI 40~50 구간 상승)
-    if ((r <= 32 && disparity > -10) || (disparity >= 0 && disparity <= 1.0 && r >= 40 && r <= 50)) {
+    if ((r14 <= 32 && disparity > -10) || (disparity >= 0 && disparity <= 1.0 && r14 >= 40 && r14 <= 50)) {
         return {
             action: "강력 매수 (바닥/돌파)",
-            reason: (r <= 32)
-                ? `RSI ${r.toFixed(1)} 극과매도. 반등을 노리는 적극 매수 타점입니다.`
+            reason: (r14 <= 32)
+                ? `RSI ${r14.toFixed(1)} 과매도. 반등을 노리는 적극 매수 타점입니다.`
                 : `20일선 안착 후 상승 전환 시작. 강력한 매수 타이밍입니다.`,
             color: "text-purple-400 font-extrabold animate-pulse",
             type: 'BUY'
@@ -100,14 +151,10 @@ export const getStrategyFeedback = (price, ma20, rsi14, strategyType = 'CORE') =
     }
 
     // ---------------------------------------------------------
-    // 4. BUY STRATEGIES (Conditional)
+    // 7. BUY STRATEGIES (Conditional)
     // ---------------------------------------------------------
-
-    // Strategy 2: 눌림목 (CORE, SAFE, INCOME)
-    // 안정적 종목은 20일선 근처에서 매수
     if (strategyType === 'CORE' || strategyType === 'SAFE' || strategyType === 'INCOME') {
-        // 이격도 0 ~ 3% 이내 & RSI 60 미만 (과열 아님)
-        if (disparity >= 0 && disparity <= 3.5 && r < 60) {
+        if (disparity >= 0 && disparity <= 3.5 && r14 < 60) {
             return {
                 action: "매수 (눌림목)",
                 reason: `20일선 지지 (이격 +${disparity.toFixed(1)}%). 분할 매수 적기입니다.`,
@@ -117,20 +164,16 @@ export const getStrategyFeedback = (price, ma20, rsi14, strategyType = 'CORE') =
         }
     }
 
-    // Strategy 1: 돌파 (ALPHA)
-    // 성장주는 추세가 강할 때 불타기
     if (strategyType === 'ALPHA') {
-        // RSI 60~70 사이 (상승 모멘텀 강함)
-        if (r >= 60 && r < 70) {
+        if (r14 >= 60 && r14 < 70) {
             return {
                 action: "매수 (돌파)",
-                reason: `강한 상승 추세 (RSI ${r.toFixed(1)}). 전고점 돌파 시 추가 매수.`,
+                reason: `강한 상승 추세 (RSI ${r14.toFixed(1)}). 전고점 돌파 시 추가 매수.`,
                 color: "text-blue-400 font-bold",
                 type: 'BUY'
             };
         }
-        // Alpha 종목이라도 20일선 근처면 매수 기회 (Top-up)
-        if (disparity >= 0 && disparity <= 4.0 && r < 60) {
+        if (disparity >= 0 && disparity <= 4.0 && r14 < 60) {
             return {
                 action: "매수 (지지)",
                 reason: `추세선 지지 확인 (이격 +${disparity.toFixed(1)}%).`,
@@ -141,7 +184,7 @@ export const getStrategyFeedback = (price, ma20, rsi14, strategyType = 'CORE') =
     }
 
     // ---------------------------------------------------------
-    // 4. HOLD (보유)
+    // 8. HOLD (보유)
     // ---------------------------------------------------------
     return {
         action: "홀딩 (지속)",
@@ -150,3 +193,4 @@ export const getStrategyFeedback = (price, ma20, rsi14, strategyType = 'CORE') =
         type: 'HOLD'
     };
 };
+

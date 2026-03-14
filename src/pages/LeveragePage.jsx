@@ -27,9 +27,10 @@ const LeverageCard = ({ ticker, name, data, settings, onSaveSettings }) => {
     const isOverbought = rsi14 >= 70;
     const isOversold = rsi14 <= 30;
 
-    const feedback = getStrategyFeedback(price, ma20, rsi14);
+    const feedback = getStrategyFeedback(data || {}, { ticker, name, strategy: 'ALPHA', group: 'US_ETF' }); // Leverage is usually ETFs like TQQQ
     const signal = feedback.action;
     const signalColor = feedback.color;
+
 
     // Default base price: Use prevClose if basePrice is 0 or not set
     const basePrice = parseFloat(localSettings.basePrice) || prevClose || price;

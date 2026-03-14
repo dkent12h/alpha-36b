@@ -38,10 +38,12 @@ export default function ActionGuide() {
         const info = allTickers.find(t => t.ticker === ticker);
         if (!info) return;
 
-        const feedback = getStrategyFeedback(item.price, item.ma20, item.rsi14, info.strategy);
+        const feedback = getStrategyFeedback(item, info);
 
-        if (feedback.action.includes('강력 매수')) {
-            strongBuys.push({ name: info.name, ...feedback });
+        if (feedback.action.includes('초강력 매수')) {
+            strongBuys.push({ name: info.name, ...feedback, priority: 1 });
+        } else if (feedback.action.includes('강력 매수')) {
+            strongBuys.push({ name: info.name, ...feedback, priority: 2 });
         } else if (feedback.type === 'BUY') {
             buys.push({ name: info.name, ...feedback });
         } else if (feedback.action.includes('강력 매도')) {
@@ -52,6 +54,10 @@ export default function ActionGuide() {
             sells.push({ name: info.name, ...feedback });
         }
     });
+
+    // Sort strongBuys to put Super Strong first
+    strongBuys.sort((a, b) => (a.priority || 10) - (b.priority || 10));
+
 
     return (
         <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 mb-8 border border-slate-700 shadow-xl">

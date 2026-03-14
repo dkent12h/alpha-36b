@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
-import { calculateSMA, calculateRSI } from '../utils/indicators';
+import { calculateSMA, calculateRSI, calculateBollingerBands } from '../utils/indicators';
 
 // --------------------------------------------------------------------------
 // CONSTANTS & CONFIG
@@ -129,8 +129,8 @@ const fetchYahooData = async (symbol) => {
     try {
         const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
         const baseUrl = isProduction ? '/api/yahoo-chart' : '/api/yahoo/v8/finance/chart';
-        // Construct URL
-        const query = `?interval=1d&range=3mo&includePrePost=true`;
+        // Construct URL - Change range to 1y for 200d MA
+        const query = `?interval=1d&range=1y&includePrePost=true`;
         let url;
 
         if (isProduction) {
@@ -145,8 +145,11 @@ const fetchYahooData = async (symbol) => {
         if (!result) throw new Error('No result');
 
         const meta = result.meta;
-        const closes = result.indicators?.quote?.[0]?.close || [];
+        const quote = result.indicators?.quote?.[0] || {};
+        const closes = quote.close || [];
+        const volumes = quote.volume || [];
         const lastClose = closes[closes.length - 1];
+        const lastVolume = volumes[volumes.length - 1];
 
         // HTML Scraping Fallback (US only)
         const isUSStock = !meta.symbol.includes('.KS') && !meta.symbol.includes('.KQ');
@@ -218,6 +221,8 @@ const fetchYahooData = async (symbol) => {
             changePercent: 0,
             marketState: marketState, // E.g., 'PRE', 'POST', 'REGULAR'
             history: closes.filter(c => c !== null),
+            volumes: volumes.filter(v => v !== null),
+            lastVolume: lastVolume,
             source: 'YAHOO_API'
         };
 
@@ -384,15 +389,34 @@ export const useMarketData = (tickers) => {
 
     // Update Helpers - Return TRUE if changed
     const updateCacheWithResult = (ticker, result, cache) => {
-        let ma20 = null, rsi14 = null;
+        let ma20 = null, rsi14 = null, rsi21 = null, ma200 = null, bollinger = null, volumeRatio = null;
+        
         if (result.history && result.history.length >= 20) {
             globalCache.historyData[ticker] = result.history;
             ma20 = calculateSMA(result.history, 20);
             rsi14 = calculateRSI(result.history, 14);
+            rsi21 = calculateRSI(result.history, 21);
+            bollinger = calculateBollingerBands(result.history, 20);
+            
+            if (result.history.length >= 200) {
+                ma200 = calculateSMA(result.history, 200);
+            }
         } else if (globalCache.historyData[ticker]) {
             const hist = globalCache.historyData[ticker];
             ma20 = calculateSMA(hist, 20);
             rsi14 = calculateRSI(hist, 14);
+            bollinger = calculateBollingerBands(hist, 20);
+            if (hist.length >= 200) {
+                ma200 = calculateSMA(hist, 200);
+            }
+        }
+
+        // Calculate Volume Ratio (current volume / 20d avg volume)
+        if (result.volumes && result.volumes.length >= 20) {
+            const avgVol = calculateSMA(result.volumes, 20);
+            if (avgVol > 0) {
+                volumeRatio = (result.lastVolume || 0) / avgVol;
+            }
         }
 
         const baseline = result.prevClose || result.price;
@@ -426,12 +450,21 @@ export const useMarketData = (tickers) => {
             prevClose: baseline.toFixed(2),
             lastCompletedClose: result.lastCompletedClose || baseline.toFixed(2),
             ma20: ma20 ? ma20.toFixed(2) : '---',
+            ma200: ma200 ? ma200.toFixed(2) : '---',
             rsi14: rsi14 ? Math.round(rsi14) : '--',
+            rsi21: rsi21 ? Math.round(rsi21) : '--',
+            bollinger: bollinger,
+            volumeRatio: volumeRatio ? volumeRatio.toFixed(2) : '---',
             status: status,
             timestamp: new Date().toISOString(),
             source: result.source,
             history: result.history || []
         };
+
+        // GLOBAL INDEX INJECTION for Strategy Engine
+        if (ticker === '^VIX') window.vix_value = parseFloat(priceDisplay);
+        if (ticker === '^VKOSPI') window.vkospi_value = parseFloat(priceDisplay);
+
         return true;
     };
 
@@ -504,6 +537,7 @@ export const useMarketData = (tickers) => {
             };
         });
     };
+
 
     // --------------------------------------------------------------------------
     // EFFECTS

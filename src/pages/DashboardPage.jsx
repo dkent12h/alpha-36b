@@ -20,10 +20,11 @@ export default function DashboardPage({ tickers, title }) {
             if (!dataA || !dataB) return 0;
             if (dataA.price === undefined || dataB.price === undefined) return 0;
 
-            const feedA = getStrategyFeedback(dataA.price, dataA.ma20, dataA.rsi14, a.strategy).action;
-            const feedB = getStrategyFeedback(dataB.price, dataB.ma20, dataB.rsi14, b.strategy).action;
+            const feedA = getStrategyFeedback(dataA, a).action;
+            const feedB = getStrategyFeedback(dataB, b).action;
 
             const getPriority = (action) => {
+                if (action.includes('초강력 매수')) return 0;
                 if (action.includes('강력 매수')) return 1;
                 if (action.includes('강력 매도')) return 2;
                 if (action.includes('강력 손절')) return 3;

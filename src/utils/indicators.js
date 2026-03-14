@@ -47,3 +47,27 @@ export const calculateRSI = (prices, period = 14) => {
     const rs = avgGain / avgLoss;
     return 100 - (100 / (1 + rs));
 };
+
+/**
+ * Calculate Bollinger Bands (BB).
+ * @param {number[]} prices - Price array.
+ * @param {number} period - SMA period.
+ * @param {number} stdDev - Multiplier for standard deviation.
+ * @returns {object|null} - { upper, middle, lower }
+ */
+export const calculateBollingerBands = (prices, period = 20, stdDev = 2) => {
+    if (!prices || prices.length < period) return null;
+    const slice = prices.slice(-period);
+    const middle = calculateSMA(slice, period);
+    
+    const squareDiffs = slice.map(p => Math.pow(p - middle, 2));
+    const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / period;
+    const standardDeviation = Math.sqrt(avgSquareDiff);
+    
+    return {
+        upper: middle + (stdDev * standardDeviation),
+        middle: middle,
+        lower: middle - (stdDev * standardDeviation)
+    };
+};
+

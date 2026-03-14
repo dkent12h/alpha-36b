@@ -21,12 +21,12 @@ export const MARKETS = {
     // ------------------------------------------------------------
     PORTFOLIO_KR: [
         // Core Stocks
-        { ticker: '005930.KS', name: '삼성전자', strategy: 'CORE', target: 500 },
-        { ticker: '000660.KS', name: 'SK하이닉스', strategy: 'ALPHA', target: 50 },
-        { ticker: '052710.KS', name: '아모텍', strategy: 'ALPHA' },
+        { ticker: '005930.KS', name: '삼성전자', strategy: 'CORE', group: 'KR_KOSPI', target: 500 },
+        { ticker: '000660.KS', name: 'SK하이닉스', strategy: 'ALPHA', group: 'KR_KOSPI', target: 50 },
+        { ticker: '052710.KS', name: '아모텍', strategy: 'ALPHA', group: 'KR_KOSDAQ_MID' },
 
         // Index ETFs
-        { ticker: '102110.KS', name: 'TIGER 200', strategy: 'CORE', target: 500 },
+        { ticker: '102110.KS', name: 'TIGER 200', strategy: 'CORE', group: 'KR_KOSPI', target: 500 },
 
         // Sector ETFs
         { ticker: '466420.KS', name: 'KODEX K-조선Top10', strategy: 'ALPHA' },
@@ -44,19 +44,19 @@ export const MARKETS = {
     // ------------------------------------------------------------
     PORTFOLIO_US: [
         // Core Stocks
-        { ticker: 'NVDA', name: '엔비디아 (NVIDIA)', strategy: 'ALPHA', earningsDate: '2026-02-26' },
-        { ticker: 'ARM', name: 'ARM 홀딩스', strategy: 'ALPHA', earningsDate: '2026-02-08' },
-        { ticker: 'MSFT', name: '마이크로소프트', strategy: 'CORE', earningsDate: '2026-04-25' },
-        { ticker: 'GOOGL', name: '구글 (Alphabet)', strategy: 'ALPHA', earningsDate: '2026-04-24' },
-        { ticker: 'AAPL', name: '애플 (Apple)', strategy: 'CORE' },
-        { ticker: 'TSLA', name: '테슬라 (Tesla)', strategy: 'ALPHA', earningsDate: '2026-04-22' },
+        { ticker: 'NVDA', name: '엔비디아 (NVIDIA)', strategy: 'ALPHA', group: 'US_SINGLE', earningsDate: '2026-02-26' },
+        { ticker: 'ARM', name: 'ARM 홀딩스', strategy: 'ALPHA', group: 'US_SINGLE', earningsDate: '2026-02-08' },
+        { ticker: 'MSFT', name: '마이크로소프트', strategy: 'CORE', group: 'US_SINGLE', earningsDate: '2026-04-25' },
+        { ticker: 'GOOGL', name: '구글 (Alphabet)', strategy: 'ALPHA', group: 'US_SINGLE', earningsDate: '2026-04-24' },
+        { ticker: 'AAPL', name: '애플 (Apple)', strategy: 'CORE', group: 'US_SINGLE' },
+        { ticker: 'TSLA', name: '테슬라 (Tesla)', strategy: 'ALPHA', group: 'US_SINGLE', earningsDate: '2026-04-22' },
 
         // ETFs
-        { ticker: 'POWR', name: 'POWR (전력 ETF)', strategy: 'ALPHA' },
-        { ticker: 'VOO', name: 'VOO (S&P500)', strategy: 'CORE' },
-        { ticker: 'QQQM', name: 'QQQM (나스닥100)', strategy: 'CORE' },
-        { ticker: 'SOXX', name: 'SOXX (반도체)', strategy: 'ALPHA' },
-        { ticker: 'TLT', name: 'TLT (미국장기채)', strategy: 'CORE' },
+        { ticker: 'POWR', name: 'POWR (전력 ETF)', strategy: 'ALPHA', group: 'US_ETF' },
+        { ticker: 'VOO', name: 'VOO (S&P500)', strategy: 'CORE', group: 'US_ETF' },
+        { ticker: 'QQQM', name: 'QQQM (나스닥100)', strategy: 'CORE', group: 'US_ETF' },
+        { ticker: 'SOXX', name: 'SOXX (반도체)', strategy: 'ALPHA', group: 'US_ETF' },
+        { ticker: 'TLT', name: 'TLT (미국장기채)', strategy: 'CORE', group: 'US_ETF' },
 
         // Crypto & Commodities
         { ticker: 'BTC-USD', name: '비트코인 (BTC)', strategy: 'ALPHA' },
@@ -196,6 +196,9 @@ export const MARKETS = {
         { ticker: '373220.KS', name: 'LG에너지솔루션', strategy: 'ALPHA' },
         { ticker: '454910.KS', name: '두산로보틱스', strategy: 'ALPHA' },
         { ticker: '418670.KS', name: 'ACE 미국30년국채액티브(H)', strategy: 'SAFE' },
+        { ticker: '095340.KQ', name: 'ISC', strategy: 'ALPHA', group: 'KR_KOSDAQ_MID' },
+        { ticker: '018260.KS', name: '삼성SDS', strategy: 'CORE', group: 'KR_KOSPI' },
+        { ticker: '058470.KQ', name: '리노공업', strategy: 'ALPHA', group: 'KR_KOSDAQ_MID' },
     ],
 
     // ------------------------------------------------------------
@@ -229,6 +232,8 @@ export const MARKETS = {
         { ticker: '364970.KS', name: 'TIGER 바이오TOP10' },
         { ticker: '0115D0.KS', name: 'KODEX K-조선Top10' },
         { ticker: '305720.KS', name: 'TIGER 2차전지소재' },
+        { ticker: '117460.KS', name: 'KODEX 에너지화학', strategy: 'ALPHA', group: 'KR_KOSPI' },
+        { ticker: '467340.KS', name: 'SOL 자동차TOP3플러스', strategy: 'ALPHA', group: 'KR_KOSPI' },
     ],
 
     // ------------------------------------------------------------
