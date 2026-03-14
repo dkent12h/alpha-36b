@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useMarketData } from '../hooks/useMarketData';
 import { MARKETS } from '../constants';
 import { getStrategyFeedback } from '../utils/strategy';

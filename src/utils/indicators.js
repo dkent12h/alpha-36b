@@ -59,6 +59,7 @@ export const calculateBollingerBands = (prices, period = 20, stdDev = 2) => {
     if (!prices || prices.length < period) return null;
     const slice = prices.slice(-period);
     const middle = calculateSMA(slice, period);
+    if (!middle) return null;
     
     const squareDiffs = slice.map(p => Math.pow(p - middle, 2));
     const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / period;
@@ -70,4 +71,3 @@ export const calculateBollingerBands = (prices, period = 20, stdDev = 2) => {
         lower: middle - (stdDev * standardDeviation)
     };
 };
-
