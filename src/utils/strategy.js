@@ -4,6 +4,15 @@
  */
 
 export const getStrategyFeedback = (data, tickerInfo = {}) => {
+    if (!data) {
+        return {
+            action: "로딩 중...",
+            reason: "데이터를 기다리고 있습니다...",
+            color: "text-slate-500",
+            type: 'LOADING'
+        };
+    }
+
     const { price, ma20, ma200, rsi14, rsi21, bollinger, volumeRatio, status } = data;
     const { strategy: strategyType = 'CORE', group = 'US_SINGLE' } = tickerInfo;
 
