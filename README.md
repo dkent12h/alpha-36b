@@ -29,12 +29,19 @@ This is a React.js + Tailwind CSS web application designed as a real-time invest
     npm run build
     ```
 
-## Deployment (Vercel)
+## Deployment (Cloudflare Pages - Free)
 
-1.  Push this repository to GitHub.
-2.  Import the project into Vercel.
-3.  Vercel will automatically detect Vite and set the build command (`npm run build`) and output directory (`dist`).
-4.  Deploy!
+1.  **Push to GitHub**: Push this repository to your GitHub account.
+2.  **Connect to Cloudflare**:
+    - Log in to the [Cloudflare Dashboard](https://dash.cloudflare.com/).
+    - Go to **Workers & Pages** -> **Create application** -> **Pages** -> **Connect to Git**.
+    - Select your repository.
+3.  **Configure Build Settings**:
+    - **Framework preset**: `Vite` (or `None`).
+    - **Build command**: `npm run build`
+    - **Build output directory**: `dist`
+4.  **Add Functions**: Cloudflare will automatically detect the `functions` directory for API routes.
+5.  **Deploy!**
 
 ## Configuration
 
@@ -43,5 +50,5 @@ This is a React.js + Tailwind CSS web application designed as a real-time invest
 
 ## Deployment
 
-- **Live Site**: [https://alpha-36b-dashboard.netlify.app/](https://alpha-36b-dashboard.netlify.app/)
+- **Live Site**: [https://alpha-36b.pages.dev/](https://alpha-36b.pages.dev/)
 

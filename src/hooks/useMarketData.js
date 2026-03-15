@@ -128,12 +128,16 @@ const fetchYahooData = async (symbol) => {
     // 2. Try Yahoo API Proxy
     try {
         const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
-        const baseUrl = isProduction ? '/api/yahoo-chart' : '/api/yahoo/v8/finance/chart';
-        // Construct URL - Change range to 1y for 200d MA
+        const isWranglerDev = typeof window !== 'undefined' && window.location.port === '8788';
+        
+        // Use Cloudflare Functions (/api/yahoo-chart) if in production OR running via Wrangler locally
+        const baseUrl = (isProduction || isWranglerDev) ? '/api/yahoo-chart' : '/api/yahoo/v8/finance/chart';
+        
+        // Construct URL
         const query = `?interval=1d&range=1y&includePrePost=true`;
         let url;
 
-        if (isProduction) {
+        if (isProduction || isWranglerDev) {
             url = `${baseUrl}?symbol=${encodeURIComponent(symbol)}${query.replace('?', '&')}`;
         } else {
             url = `${baseUrl}/${symbol}${query}`;

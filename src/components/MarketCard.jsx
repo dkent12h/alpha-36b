@@ -8,15 +8,18 @@ import { differenceInCalendarDays, parseISO } from 'date-fns';
 
 import { getStrategyFeedback } from '../utils/strategy';
 
-const StockCard = ({ ticker, name, price, change, changePercent, ma20, rsi14, status, earningsDate, strategy }) => {
+const MarketCard = ({ 
+    ticker, name, price, change, changePercent, ma20, rsi14, status, earningsDate, strategy,
+    group, rsi21, bollinger, volumeRatio, ma200
+}) => {
     const isPositive = parseFloat(change) >= 0;
     const isOverbought = rsi14 >= 70;
     const isOversold = rsi14 <= 30;
 
     // Use Strategy Engine
-    const tickerInfo = { ticker, name, strategy, group: props.group || (ticker.includes('.KS') || ticker.includes('.KQ') ? 'KR_KOSPI' : 'US_SINGLE') };
+    const tickerInfo = { ticker, name, strategy, group: group || (ticker.includes('.KS') || ticker.includes('.KQ') ? 'KR_KOSPI' : 'US_SINGLE') };
     // Handle props passed from DashboardPage via spread {...tickData}
-    const data = { price, change, changePercent, ma20, rsi14, rsi21: props.rsi21, bollinger: props.bollinger, volumeRatio: props.volumeRatio, status, ma200: props.ma200 };
+    const data = { price, change, changePercent, ma20, rsi14, rsi21, bollinger, volumeRatio, status, ma200 };
     
     const feedback = getStrategyFeedback(data, tickerInfo);
     const signal = feedback.action;
@@ -137,4 +140,4 @@ const StockCard = ({ ticker, name, price, change, changePercent, ma20, rsi14, st
     );
 };
 
-export default StockCard;
+export default MarketCard;

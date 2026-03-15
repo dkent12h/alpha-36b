@@ -15,6 +15,26 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      window.onerror = function(msg, url, lineNo, columnNo, error) {
+        var div = document.createElement('div');
+        div.style.position = 'fixed';
+        div.style.top = '0';
+        div.style.left = '0';
+        div.style.width = '100%';
+        div.style.backgroundColor = '#450a0a';
+        div.style.color = '#f87171';
+        div.style.padding = '20px';
+        div.style.zIndex = '9999';
+        div.style.fontFamily = 'monospace';
+        div.innerHTML = '<h2>🚨 Debug Alert:</h2>' +
+                        '<p><b>Error:</b> ' + msg + '</p>' +
+                        '<p><b>File:</b> ' + (url ? url.split("/").pop() : "unknown") + '</p>' +
+                        '<p><b>Line:</b> ' + lineNo + '</p>';
+        document.body.appendChild(div);
+        return false;
+      };
+    </script>
     <script type="module" src="/src/main.jsx"></script>
     <!-- 
     <script>

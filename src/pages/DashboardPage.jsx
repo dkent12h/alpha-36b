@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useMarketData } from '../hooks/useMarketData';
 import { getStrategyFeedback } from '../utils/strategy';
-import StockCard from '../components/StockCard';
+import MarketCard from '../components/MarketCard';
 import IndexChartCard from '../components/IndexChartCard';
 import ActionGuide from '../components/ActionGuide';
 import { Loader2 } from 'lucide-react';
@@ -94,7 +94,7 @@ export default function DashboardPage({ tickers, title }) {
                     }
                     // Else use Standard Stock Card
                     return (
-                        <StockCard
+                        <MarketCard
                             key={t.ticker}
                             ticker={t.ticker}
                             name={t.name}

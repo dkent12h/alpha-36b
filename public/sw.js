@@ -1,4 +1,4 @@
-const CACHE_NAME = 'alpha36b-v2';
+const CACHE_NAME = 'alpha36b-v3';
 const urlsToCache = [
     '/',
     '/index.html',
